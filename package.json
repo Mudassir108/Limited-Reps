@@ -6,8 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "process-products": "node scripts/process-products.js"
+    "lint": "next lint"
   },
   "dependencies": {
     "@emailjs/browser": "^3.12.1",
