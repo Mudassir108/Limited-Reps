@@ -88,6 +88,9 @@ export default function PayPalButton({ product, onSuccess, onError }) {
           height: '48px',
           lineHeight: '24px',
           textAlign: 'center',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
           boxSizing: 'border-box'
         }}
       >
