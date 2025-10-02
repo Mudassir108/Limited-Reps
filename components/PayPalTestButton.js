@@ -6,7 +6,11 @@ export default function PayPalTestButton({ product, onSuccess, onError }) {
   const [error, setError] = useState(null)
 
   // PayPal Sandbox Client ID - replace with your actual sandbox client ID
-  const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'YOUR_SANDBOX_CLIENT_ID_HERE'
+  const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'AeHaQB7hN7wN7RRskKlvGdDm8N8v8W8v8W8v8W8v8W8v8W8v8W8v8W8v8W8v8W8v8W8v8W8v8W8v'
+  
+  // Debug information
+  console.log('PayPal Client ID:', PAYPAL_CLIENT_ID)
+  console.log('Environment variables:', process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID)
 
   useEffect(() => {
     // Load PayPal SDK

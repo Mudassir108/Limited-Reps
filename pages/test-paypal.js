@@ -131,6 +131,20 @@ export default function TestPayPal() {
             PayPal Test Payment
           </h3>
           
+          {/* Debug Information */}
+          <div style={{ 
+            background: '#f8f9fa', 
+            padding: '15px', 
+            borderRadius: '6px', 
+            marginBottom: '20px',
+            fontSize: '14px'
+          }}>
+            <strong>Debug Info:</strong><br/>
+            Client ID: {process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'Not set'}<br/>
+            Product: {selectedProduct.name}<br/>
+            Price: ${selectedProduct.price}
+          </div>
+          
           <PayPalTestButton 
             product={selectedProduct}
             onSuccess={handlePaymentSuccess}
