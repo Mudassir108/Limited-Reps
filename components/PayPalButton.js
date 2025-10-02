@@ -7,6 +7,14 @@ export default function PayPalButton({ product, onSuccess, onError }) {
 
   // PayPal Sandbox Client ID
   const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'AXd5jYxj9xnLlvdf2d1BeDm-4g5LUeaL5FN8DoIp-vOzyHwVGnokhkRYc-RmUU-IJ7HZ0W_oWcqM_O5l'
+  
+  // Debug logging
+  console.log('PayPal Component Debug:', {
+    clientId: PAYPAL_CLIENT_ID,
+    product: product,
+    isLoaded: isLoaded,
+    error: error
+  })
 
   useEffect(() => {
     // Load PayPal SDK
@@ -130,8 +138,18 @@ export default function PayPalButton({ product, onSuccess, onError }) {
 
     if (product) {
       loadPayPalScript()
+      
+      // Fallback timeout in case PayPal doesn't load
+      const timeout = setTimeout(() => {
+        if (!isLoaded) {
+          console.warn('PayPal SDK failed to load within 10 seconds')
+          setError('PayPal is taking too long to load. Please refresh the page.')
+        }
+      }, 10000)
+      
+      return () => clearTimeout(timeout)
     }
-  }, [product, PAYPAL_CLIENT_ID])
+  }, [product, PAYPAL_CLIENT_ID, isLoaded])
 
   if (error) {
     return (
@@ -151,27 +169,40 @@ export default function PayPalButton({ product, onSuccess, onError }) {
   if (!isLoaded) {
     return (
       <div style={{ 
-        padding: '20px', 
-        background: '#f0f0f0', 
-        borderRadius: '8px',
-        textAlign: 'center'
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '10px'
       }}>
-        <p>Loading PayPal...</p>
-        <div style={{
-          width: '40px',
-          height: '40px',
-          border: '4px solid #f3f3f3',
-          borderTop: '4px solid #3498db',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite',
-          margin: '0 auto'
-        }}></div>
-        <style jsx>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
+        <button
+          style={{
+            background: 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)',
+            color: '#000',
+            border: 'none',
+            padding: '12px 24px',
+            borderRadius: '25px',
+            fontSize: '1.1rem',
+            fontWeight: '700',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            boxShadow: '0 8px 20px rgba(255, 215, 0, 0.3)',
+            textTransform: 'uppercase',
+            letterSpacing: '1px',
+            width: '160px',
+            height: '48px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxSizing: 'border-box',
+            opacity: '0.7'
+          }}
+          disabled
+        >
+          Loading...
+        </button>
+        <div style={{ fontSize: '12px', color: '#666' }}>
+          🧪 Loading PayPal Sandbox...
+        </div>
       </div>
     )
   }
