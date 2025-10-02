@@ -42,7 +42,7 @@ export default function PayPalButton({ product, onSuccess, onError }) {
       }
       
       // Create PayPal SANDBOX payment URL (using sandbox.paypal.com)
-      const paypalUrl = `https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_xclick&business=limitedrepsbusiness@gmail.com&item_name=${encodeURIComponent(product.name)}&amount=${Math.round(product.price)}&currency_code=USD&custom=${orderId}&return=${window.location.origin}/success&cancel_return=${window.location.origin}/cancel`
+      const paypalUrl = `https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${encodeURIComponent('tigergee503@gmail.com')}&item_name=${encodeURIComponent(product.name)}&amount=${Math.round(product.price)}&currency_code=USD&custom=${orderId}&return=${encodeURIComponent(window.location.origin + '/success')}&cancel_return=${encodeURIComponent(window.location.origin + '/cancel')}`
       
       // Redirect to PayPal Sandbox
       window.location.href = paypalUrl
