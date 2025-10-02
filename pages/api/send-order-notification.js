@@ -1,8 +1,5 @@
 import { sendOrderNotification } from '../../lib/nodemailer'
 
-// Load environment variables
-require('dotenv').config({ path: '.env' });
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
