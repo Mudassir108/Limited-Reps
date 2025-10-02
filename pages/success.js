@@ -9,10 +9,39 @@ export default function Success() {
     if (typeof window !== 'undefined') {
       const storedOrder = localStorage.getItem('lastOrder')
       if (storedOrder) {
-        setOrderDetails(JSON.parse(storedOrder))
+        const orderData = JSON.parse(storedOrder)
+        // Update status to completed since user returned from PayPal
+        orderData.status = 'Payment Completed'
+        setOrderDetails(orderData)
+        
+        // Send email notification to owner now that payment is confirmed
+        sendOwnerNotification(orderData)
+        
+        // Clear the order from localStorage to prevent duplicate emails
+        localStorage.removeItem('lastOrder')
       }
     }
   }, [])
+
+  const sendOwnerNotification = async (orderData) => {
+    try {
+      const response = await fetch('/api/send-order-notification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ orderDetails: orderData })
+      })
+      
+      if (response.ok) {
+        console.log('Owner notification sent successfully after payment confirmation')
+      } else {
+        console.error('Failed to send owner notification')
+      }
+    } catch (error) {
+      console.error('Error sending owner notification:', error)
+    }
+  }
 
   return (
     <Layout>
