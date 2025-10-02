@@ -24,10 +24,10 @@ export default function PayPalButton({ product, onSuccess, onError }) {
       // Store in localStorage for success page (email will be sent from success page after payment confirmation)
       localStorage.setItem('lastOrder', JSON.stringify(orderDetails))
       
-      // Create PayPal SANDBOX payment URL (using sandbox.paypal.com)
-      const paypalUrl = `https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${encodeURIComponent('tigergee503@gmail.com')}&item_name=${encodeURIComponent(product.name)}&amount=${Math.round(product.price)}&currency_code=USD&custom=${orderId}&return=${encodeURIComponent(window.location.origin + '/success')}&cancel_return=${encodeURIComponent(window.location.origin + '/cancel')}`
+      // Create PayPal LIVE payment URL (using paypal.com)
+      const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${encodeURIComponent('limitedrepsbusiness@gmail.com')}&item_name=${encodeURIComponent(product.name)}&amount=${Math.round(product.price)}&currency_code=USD&custom=${orderId}&return=${encodeURIComponent(window.location.origin + '/success')}&cancel_return=${encodeURIComponent(window.location.origin + '/cancel')}`
       
-      // Redirect to PayPal Sandbox
+      // Redirect to PayPal Live
       window.location.href = paypalUrl
       
     } catch (error) {
