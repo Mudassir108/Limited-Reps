@@ -62,12 +62,9 @@ export default function PayPalButton({ product, onSuccess, onError }) {
       {isProcessing && (
         <div className="processing-overlay">
           <div className="processing-spinner"></div>
-          <p>Redirecting to PayPal Sandbox...</p>
+          <p>Redirecting to PayPal...</p>
         </div>
       )}
-      <div style={{ marginBottom: '10px', fontSize: '12px', color: '#666' }}>
-        🧪 <strong>Sandbox Mode:</strong> Safe testing environment
-      </div>
       <button
         onClick={redirectToPayPalSandbox}
         className="btn btn-primary"
