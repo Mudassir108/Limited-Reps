@@ -26,7 +26,7 @@ export default function PayPalButton({ product, onSuccess, onError }) {
       }
 
       const script = document.createElement('script')
-      script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD&intent=capture&enable-funding=venmo,paylater`
+      script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD&intent=capture&disable-funding=venmo,paylater,card`
       script.async = true
       
       script.onload = () => {
@@ -49,11 +49,12 @@ export default function PayPalButton({ product, onSuccess, onError }) {
 
       window.paypal.Buttons({
         style: {
-          layout: 'vertical',
+          layout: 'horizontal',
           color: 'gold',
-          shape: 'rect',
-          label: 'paypal',
-          height: 48
+          shape: 'pill',
+          label: 'buynow',
+          height: 48,
+          tagline: false
         },
         
         createOrder: (data, actions) => {
