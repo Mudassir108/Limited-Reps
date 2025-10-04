@@ -740,8 +740,14 @@ body {
 }
 
 @keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
+    0%, 100% { 
+        transform: scale(1); 
+        opacity: 1;
+    }
+    50% { 
+        transform: scale(1.02); 
+        opacity: 0.8;
+    }
 }
 
 /* Footer */
@@ -1205,6 +1211,18 @@ body {
 .paypal-button-container {
     position: relative;
     min-height: 45px;
+}
+
+.paypal-button-container button:not(:disabled):hover {
+    background: #ffffff;
+    color: #000000;
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(255, 255, 255, 0.25);
+}
+
+.paypal-button-container button:not(:disabled):active {
+    transform: translateY(0);
+    box-shadow: 0 8px 20px rgba(255, 255, 255, 0.1);
 }
 
 .processing-overlay {

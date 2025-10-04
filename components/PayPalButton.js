@@ -1,82 +1,53 @@
 import { useState } from 'react'
 
-export default function PayPalButton({ product, onSuccess, onError }) {
+export default function PayPalButton({ product, selectedSize, selectedColor, isSelectionComplete, onBuyNowClick, onSuccess, onError }) {
   const [isProcessing, setIsProcessing] = useState(false)
 
   const redirectToPayPalSandbox = async () => {
     if (!product) return
 
-    setIsProcessing(true)
-
-    try {
-      // Generate unique order ID
-      const orderId = 'LR' + Date.now() + Math.random().toString(36).substr(2, 5).toUpperCase()
-      
-      // Store order details
-      const orderDetails = {
-        orderId: orderId,
-        productName: product.name,
-        price: Math.round(product.price),
-        timestamp: new Date().toLocaleString(),
-        status: 'Pending Payment'
-      }
-
-      // Store in localStorage for success page (email will be sent from success page after payment confirmation)
-      localStorage.setItem('lastOrder', JSON.stringify(orderDetails))
-      
-      // Create PayPal LIVE payment URL (using paypal.com)
-      const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${encodeURIComponent('limitedrepsbusiness@gmail.com')}&item_name=${encodeURIComponent(product.name)}&amount=${Math.round(product.price)}&currency_code=USD&custom=${orderId}&return=${encodeURIComponent(window.location.origin + '/success')}&cancel_return=${encodeURIComponent(window.location.origin + '/cancel')}`
-      
-      // Redirect to PayPal Live
-      window.location.href = paypalUrl
-      
-    } catch (error) {
-      console.error('PayPal redirect failed:', error)
-      if (onError) {
-        onError(error)
-      }
-    } finally {
-      setIsProcessing(false)
+    // Always trigger the buy now click handler (which will show confirmation modal or validation errors)
+    if (onBuyNowClick) {
+      onBuyNowClick()
     }
   }
 
   return (
     <div className="paypal-button-container">
-      {isProcessing && (
-        <div className="processing-overlay">
-          <div className="processing-spinner"></div>
-          <p>Redirecting to PayPal...</p>
-        </div>
-      )}
       <button
         onClick={redirectToPayPalSandbox}
         className="btn btn-primary"
-        disabled={isProcessing}
+        disabled={!isSelectionComplete}
         style={{
-          background: 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)',
-          color: '#000',
-          border: 'none',
-          padding: '12px 24px',
+          background: isSelectionComplete 
+            ? 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)' 
+            : 'transparent',
+          color: isSelectionComplete ? '#000' : '#ffffff',
+          border: isSelectionComplete ? 'none' : '2px solid #ffffff',
+          padding: '12px 16px',
           borderRadius: '25px',
-          fontSize: '1.1rem',
+          fontSize: '0.8rem',
           fontWeight: '700',
-          cursor: isProcessing ? 'not-allowed' : 'pointer',
-          opacity: isProcessing ? 0.7 : 1,
+          cursor: !isSelectionComplete ? 'not-allowed' : 'pointer',
+          opacity: !isSelectionComplete ? 0.7 : 1,
           transition: 'all 0.3s ease',
-          boxShadow: '0 8px 20px rgba(255, 215, 0, 0.3)',
+          boxShadow: isSelectionComplete 
+            ? '0 8px 20px rgba(255, 215, 0, 0.3)' 
+            : '0 8px 20px rgba(255, 255, 255, 0.1)',
           textTransform: 'uppercase',
-          letterSpacing: '1px',
-          width: '160px',
-          height: '48px',
-          lineHeight: '24px',
+          letterSpacing: '0.5px',
+          display: 'inline-block',
           textAlign: 'center',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxSizing: 'border-box'
+          width: '180px',
+          height: '48px',
+          lineHeight: '1.2',
+          boxSizing: 'border-box',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis'
         }}
       >
-        {isProcessing ? 'Processing...' : 'Buy Now'}
+        {!isSelectionComplete ? 'Select Options' : 'Buy Now'}
       </button>
     </div>
   )
