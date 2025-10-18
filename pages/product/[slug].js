@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 import Layout from '../../components/Layout'
 import PayPalButton from '../../components/PayPalButton'
 import flatProducts from '../../flat_products.json'
+import { getProductSizing } from '../../lib/productSizing'
 
 export default function ProductPage() {
   const router = useRouter()
@@ -14,6 +15,7 @@ export default function ProductPage() {
   const [showSizeError, setShowSizeError] = useState(false)
   const [showColorError, setShowColorError] = useState(false)
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
+  const [productSizing, setProductSizing] = useState(null)
 
   // Customer information fields
   const [customerInfo, setCustomerInfo] = useState({
@@ -46,12 +48,18 @@ export default function ProductPage() {
           price: foundProduct.sellingPrice,
           id: foundProduct.publicId || `product-${Date.now()}`
         })
+        // Set dynamic sizing based on product category and name
+        const sizing = getProductSizing(foundProduct.category, foundProduct.name)
+        setProductSizing(sizing)
       } else {
         setProduct({
           ...flatProducts[0],
           price: flatProducts[0].sellingPrice,
           id: flatProducts[0].publicId || `product-${Date.now()}`
         })
+        // Set dynamic sizing for fallback product
+        const sizing = getProductSizing(flatProducts[0].category, flatProducts[0].name)
+        setProductSizing(sizing)
       }
       setLoading(false)
     }
@@ -84,23 +92,23 @@ export default function ProductPage() {
     setShowCustomerInfoError(false)
   }
 
-  const isSelectionComplete = selectedSize && selectedColor
+  const isSelectionComplete = (!productSizing?.showSizes || selectedSize) && (!productSizing?.showColors || selectedColor)
   const isCustomerInfoComplete = customerInfo.firstName && customerInfo.lastName && 
     customerInfo.email && customerInfo.phone && customerInfo.address && 
     customerInfo.city && customerInfo.state && customerInfo.zipCode
 
   const handleBuyNowClick = () => {
-    if (!selectedSize) {
+    if (productSizing?.showSizes && !selectedSize) {
       setShowSizeError(true)
     }
-    if (!selectedColor) {
+    if (productSizing?.showColors && !selectedColor) {
       setShowColorError(true)
     }
     if (!isCustomerInfoComplete) {
       setShowCustomerInfoError(true)
     }
     
-    if (selectedSize && selectedColor && isCustomerInfoComplete) {
+    if (isSelectionComplete && isCustomerInfoComplete) {
       setShowConfirmationModal(true)
     }
   }
@@ -115,8 +123,8 @@ export default function ProductPage() {
         orderId: orderId,
         productName: product.name,
         price: Math.round(product.price),
-        selectedSize: selectedSize,
-        selectedColor: selectedColor,
+        selectedSize: selectedSize || 'Not specified',
+        selectedColor: selectedColor || 'Not specified',
         customerInfo: customerInfo,
         timestamp: new Date().toLocaleString(),
         status: 'Pending Payment'
@@ -124,7 +132,7 @@ export default function ProductPage() {
 
       localStorage.setItem('lastOrder', JSON.stringify(orderDetails))
       
-      const itemName = `${product.name} - Size: ${selectedSize}, Color: ${selectedColor}`
+      const itemName = `${product.name}${selectedSize ? ` - Size: ${selectedSize}` : ''}${selectedColor ? ` - Color: ${selectedColor}` : ''}`
       const businessEmail = process.env.NEXT_PUBLIC_BUSINESS_EMAIL || 'limitedrepsbusiness@gmail.com'
       const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${encodeURIComponent(businessEmail)}&item_name=${encodeURIComponent(itemName)}&amount=${Math.round(product.price)}&currency_code=USD&custom=${orderId}&return=${encodeURIComponent(window.location.origin + '/success')}&cancel_return=${encodeURIComponent(window.location.origin + '/cancel')}&no_shipping=0&address_override=1&first_name=${encodeURIComponent(customerInfo.firstName)}&last_name=${encodeURIComponent(customerInfo.lastName)}&email=${encodeURIComponent(customerInfo.email)}&address1=${encodeURIComponent(customerInfo.address)}&city=${encodeURIComponent(customerInfo.city)}&state=${encodeURIComponent(customerInfo.state)}&zip=${encodeURIComponent(customerInfo.zipCode)}&phone=${encodeURIComponent(customerInfo.phone)}`
       
@@ -203,15 +211,16 @@ export default function ProductPage() {
                 <strong>Price:</strong> <span className="price">${Math.round(product.price)}</span>
               </div>
               
-              <div style={{ margin: '1rem 0' }}>
-                <strong>Available Sizes:</strong>
-                <div style={{
-                  display: 'flex',
-                  gap: '.5rem',
-                  flexWrap: 'wrap',
-                  marginTop: '.5rem'
-                }}>
-                  {(product.sizes || [3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11]).map((size, index) => (
+              {productSizing?.showSizes && (
+                <div style={{ margin: '1rem 0' }}>
+                  <strong>{productSizing.sizeLabel}</strong>
+                  <div style={{
+                    display: 'flex',
+                    gap: '.5rem',
+                    flexWrap: 'wrap',
+                    marginTop: '.5rem'
+                  }}>
+                    {productSizing.sizes.map((size, index) => (
                     <button
                       key={index}
                       onClick={() => handleSizeSelect(size)}
@@ -256,17 +265,19 @@ export default function ProductPage() {
                     </span>
                   </div>
                 )}
-              </div>
+                </div>
+              )}
               
-              <div style={{ margin: '1rem 0' }}>
-                <strong>Available Colors:</strong>
-                <div style={{
-                  display: 'flex',
-                  gap: '.5rem',
-                  flexWrap: 'wrap',
-                  marginTop: '.5rem'
-                }}>
-                  {(product.colors || ['Black', 'White', 'Red', 'Blue', 'Green']).map((color, index) => (
+              {productSizing?.showColors && (
+                <div style={{ margin: '1rem 0' }}>
+                  <strong>{productSizing.colorLabel}</strong>
+                  <div style={{
+                    display: 'flex',
+                    gap: '.5rem',
+                    flexWrap: 'wrap',
+                    marginTop: '.5rem'
+                  }}>
+                    {productSizing.colors.map((color, index) => (
                     <button
                       key={index}
                       onClick={() => handleColorSelect(color)}
@@ -311,7 +322,8 @@ export default function ProductPage() {
                     </span>
                   </div>
                 )}
-              </div>
+                </div>
+              )}
               
               <div style={{ margin: '2rem 0' }}>
                 <h3 style={{ 
