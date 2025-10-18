@@ -133,9 +133,10 @@ export default function ProductPage() {
       localStorage.setItem('lastOrder', JSON.stringify(orderDetails))
       
       const itemName = `${product.name}${selectedSize ? ` - Size: ${selectedSize}` : ''}${selectedColor ? ` - Color: ${selectedColor}` : ''}`
+      // Use a working PayPal business email - you can change this to your actual PayPal email
       const businessEmail = process.env.NEXT_PUBLIC_BUSINESS_EMAIL || 'mudassirshahid605@gmail.com'
       
-      // Construct PayPal URL with proper encoding using PayPal Standard
+      // Simple PayPal URL construction - minimal parameters to avoid errors
       const paypalParams = new URLSearchParams({
         cmd: '_xclick',
         business: businessEmail,
@@ -144,11 +145,7 @@ export default function ProductPage() {
         currency_code: 'USD',
         custom: orderId,
         return: window.location.origin + '/success',
-        cancel_return: window.location.origin + '/cancel',
-        no_shipping: '1',
-        no_note: '1',
-        lc: 'US',
-        bn: 'PP-BuyNowBF:btn_buynow_LG.gif:NonHosted'
+        cancel_return: window.location.origin + '/cancel'
       })
       
       const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?${paypalParams.toString()}`
@@ -165,8 +162,14 @@ export default function ProductPage() {
         return
       }
       
-      // Redirect to PayPal
-      window.location.href = paypalUrl
+      // Try PayPal redirect with error handling
+      try {
+        window.location.href = paypalUrl
+      } catch (error) {
+        console.error('PayPal redirect error:', error)
+        // Fallback: Show alert with PayPal information
+        alert(`PayPal integration error. Please contact support with Order ID: ${orderId}`)
+      }
       
     } catch (error) {
       console.error('PayPal redirect failed:', error)
