@@ -133,9 +133,38 @@ export default function ProductPage() {
       localStorage.setItem('lastOrder', JSON.stringify(orderDetails))
       
       const itemName = `${product.name}${selectedSize ? ` - Size: ${selectedSize}` : ''}${selectedColor ? ` - Color: ${selectedColor}` : ''}`
-      const businessEmail = process.env.NEXT_PUBLIC_BUSINESS_EMAIL || 'limitedrepsbusiness@gmail.com'
-      const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${encodeURIComponent(businessEmail)}&item_name=${encodeURIComponent(itemName)}&amount=${Math.round(product.price)}&currency_code=USD&custom=${orderId}&return=${encodeURIComponent(window.location.origin + '/success')}&cancel_return=${encodeURIComponent(window.location.origin + '/cancel')}&no_shipping=0&address_override=1&first_name=${encodeURIComponent(customerInfo.firstName)}&last_name=${encodeURIComponent(customerInfo.lastName)}&email=${encodeURIComponent(customerInfo.email)}&address1=${encodeURIComponent(customerInfo.address)}&city=${encodeURIComponent(customerInfo.city)}&state=${encodeURIComponent(customerInfo.state)}&zip=${encodeURIComponent(customerInfo.zipCode)}&phone=${encodeURIComponent(customerInfo.phone)}`
+      const businessEmail = process.env.NEXT_PUBLIC_BUSINESS_EMAIL || 'mudassirshahid605@gmail.com'
       
+      // Construct PayPal URL with proper encoding
+      const paypalParams = new URLSearchParams({
+        cmd: '_xclick',
+        business: businessEmail,
+        item_name: itemName,
+        amount: Math.round(product.price),
+        currency_code: 'USD',
+        custom: orderId,
+        return: window.location.origin + '/success',
+        cancel_return: window.location.origin + '/cancel',
+        no_shipping: '0',
+        address_override: '1',
+        first_name: customerInfo.firstName,
+        last_name: customerInfo.lastName,
+        email: customerInfo.email,
+        address1: customerInfo.address,
+        city: customerInfo.city,
+        state: customerInfo.state,
+        zip: customerInfo.zipCode,
+        phone: customerInfo.phone
+      })
+      
+      const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?${paypalParams.toString()}`
+      
+      // Debug: Log the PayPal URL for troubleshooting
+      console.log('PayPal URL:', paypalUrl)
+      console.log('Business Email:', businessEmail)
+      console.log('Order Details:', orderDetails)
+      
+      // Redirect to PayPal
       window.location.href = paypalUrl
       
     } catch (error) {
