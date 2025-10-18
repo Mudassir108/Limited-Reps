@@ -136,7 +136,7 @@ export default function ProductPage() {
       // Use a working PayPal business email - you can change this to your actual PayPal email
       const businessEmail = process.env.NEXT_PUBLIC_BUSINESS_EMAIL || 'mudassirshahid605@gmail.com'
       
-      // Simple PayPal URL construction - minimal parameters to avoid errors
+      // PayPal URL construction optimized for business account
       const paypalParams = new URLSearchParams({
         cmd: '_xclick',
         business: businessEmail,
@@ -145,7 +145,11 @@ export default function ProductPage() {
         currency_code: 'USD',
         custom: orderId,
         return: window.location.origin + '/success',
-        cancel_return: window.location.origin + '/cancel'
+        cancel_return: window.location.origin + '/cancel',
+        no_shipping: '1',
+        no_note: '1',
+        lc: 'US',
+        bn: 'PP-BuyNowBF:btn_buynow_LG.gif:NonHosted'
       })
       
       const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?${paypalParams.toString()}`
@@ -160,6 +164,11 @@ export default function ProductPage() {
         console.error('Invalid business email:', businessEmail)
         alert('Payment configuration error. Please contact support.')
         return
+      }
+      
+      // Validate that we're using the correct business email
+      if (businessEmail !== 'mudassirshahid605@gmail.com') {
+        console.warn('Using fallback business email instead of configured email')
       }
       
       // Try PayPal redirect with error handling
