@@ -135,7 +135,7 @@ export default function ProductPage() {
       const itemName = `${product.name}${selectedSize ? ` - Size: ${selectedSize}` : ''}${selectedColor ? ` - Color: ${selectedColor}` : ''}`
       const businessEmail = process.env.NEXT_PUBLIC_BUSINESS_EMAIL || 'mudassirshahid605@gmail.com'
       
-      // Construct PayPal URL with proper encoding
+      // Construct PayPal URL with proper encoding using PayPal Standard
       const paypalParams = new URLSearchParams({
         cmd: '_xclick',
         business: businessEmail,
@@ -145,16 +145,10 @@ export default function ProductPage() {
         custom: orderId,
         return: window.location.origin + '/success',
         cancel_return: window.location.origin + '/cancel',
-        no_shipping: '0',
-        address_override: '1',
-        first_name: customerInfo.firstName,
-        last_name: customerInfo.lastName,
-        email: customerInfo.email,
-        address1: customerInfo.address,
-        city: customerInfo.city,
-        state: customerInfo.state,
-        zip: customerInfo.zipCode,
-        phone: customerInfo.phone
+        no_shipping: '1',
+        no_note: '1',
+        lc: 'US',
+        bn: 'PP-BuyNowBF:btn_buynow_LG.gif:NonHosted'
       })
       
       const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?${paypalParams.toString()}`
@@ -163,6 +157,13 @@ export default function ProductPage() {
       console.log('PayPal URL:', paypalUrl)
       console.log('Business Email:', businessEmail)
       console.log('Order Details:', orderDetails)
+      
+      // Validate business email before redirecting
+      if (!businessEmail || !businessEmail.includes('@')) {
+        console.error('Invalid business email:', businessEmail)
+        alert('Payment configuration error. Please contact support.')
+        return
+      }
       
       // Redirect to PayPal
       window.location.href = paypalUrl
