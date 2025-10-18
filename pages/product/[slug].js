@@ -15,6 +15,19 @@ export default function ProductPage() {
   const [showColorError, setShowColorError] = useState(false)
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
 
+  // Customer information fields
+  const [customerInfo, setCustomerInfo] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: ''
+  })
+  const [showCustomerInfoError, setShowCustomerInfoError] = useState(false)
+
   useEffect(() => {
     if (slug) {
       // Find product by slug from flat products
@@ -30,11 +43,10 @@ export default function ProductPage() {
       if (foundProduct) {
         setProduct({
           ...foundProduct,
-          price: foundProduct.sellingPrice, // Use selling price for display
+          price: foundProduct.sellingPrice,
           id: foundProduct.publicId || `product-${Date.now()}`
         })
       } else {
-        // Fallback to first product if not found
         setProduct({
           ...flatProducts[0],
           price: flatProducts[0].sellingPrice,
@@ -47,7 +59,6 @@ export default function ProductPage() {
 
   const handlePaymentSuccess = (orderDetails) => {
     console.log('Payment successful:', orderDetails)
-    // Payment success is handled in PayPalButton component
   }
 
   const handlePaymentError = (error) => {
@@ -57,15 +68,26 @@ export default function ProductPage() {
 
   const handleSizeSelect = (size) => {
     setSelectedSize(size)
-    setShowSizeError(false) // Hide error when size is selected
+    setShowSizeError(false)
   }
 
   const handleColorSelect = (color) => {
     setSelectedColor(color)
-    setShowColorError(false) // Hide error when color is selected
+    setShowColorError(false)
+  }
+
+  const handleCustomerInfoChange = (field, value) => {
+    setCustomerInfo(prev => ({
+      ...prev,
+      [field]: value
+    }))
+    setShowCustomerInfoError(false)
   }
 
   const isSelectionComplete = selectedSize && selectedColor
+  const isCustomerInfoComplete = customerInfo.firstName && customerInfo.lastName && 
+    customerInfo.email && customerInfo.phone && customerInfo.address && 
+    customerInfo.city && customerInfo.state && customerInfo.zipCode
 
   const handleBuyNowClick = () => {
     if (!selectedSize) {
@@ -74,9 +96,11 @@ export default function ProductPage() {
     if (!selectedColor) {
       setShowColorError(true)
     }
+    if (!isCustomerInfoComplete) {
+      setShowCustomerInfoError(true)
+    }
     
-    // If both selections are complete, show confirmation modal
-    if (selectedSize && selectedColor) {
+    if (selectedSize && selectedColor && isCustomerInfoComplete) {
       setShowConfirmationModal(true)
     }
   }
@@ -85,28 +109,25 @@ export default function ProductPage() {
     if (!product) return
 
     try {
-      // Generate unique order ID
       const orderId = 'LR' + Date.now() + Math.random().toString(36).substr(2, 5).toUpperCase()
       
-      // Store order details
       const orderDetails = {
         orderId: orderId,
         productName: product.name,
         price: Math.round(product.price),
         selectedSize: selectedSize,
         selectedColor: selectedColor,
+        customerInfo: customerInfo,
         timestamp: new Date().toLocaleString(),
         status: 'Pending Payment'
       }
 
-      // Store in localStorage for success page
       localStorage.setItem('lastOrder', JSON.stringify(orderDetails))
       
-      // Create PayPal LIVE payment URL with customer information fields
       const itemName = `${product.name} - Size: ${selectedSize}, Color: ${selectedColor}`
-      const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${encodeURIComponent('limitedrepsbusiness@gmail.com')}&item_name=${encodeURIComponent(itemName)}&amount=${Math.round(product.price)}&currency_code=USD&custom=${orderId}&return=${encodeURIComponent(window.location.origin + '/success')}&cancel_return=${encodeURIComponent(window.location.origin + '/cancel')}&no_shipping=0&address_override=1&first_name=&last_name=&email=`
+      const businessEmail = process.env.NEXT_PUBLIC_BUSINESS_EMAIL || 'limitedrepsbusiness@gmail.com'
+      const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${encodeURIComponent(businessEmail)}&item_name=${encodeURIComponent(itemName)}&amount=${Math.round(product.price)}&currency_code=USD&custom=${orderId}&return=${encodeURIComponent(window.location.origin + '/success')}&cancel_return=${encodeURIComponent(window.location.origin + '/cancel')}&no_shipping=0&address_override=1&first_name=${encodeURIComponent(customerInfo.firstName)}&last_name=${encodeURIComponent(customerInfo.lastName)}&email=${encodeURIComponent(customerInfo.email)}&address1=${encodeURIComponent(customerInfo.address)}&city=${encodeURIComponent(customerInfo.city)}&state=${encodeURIComponent(customerInfo.state)}&zip=${encodeURIComponent(customerInfo.zipCode)}&phone=${encodeURIComponent(customerInfo.phone)}`
       
-      // Redirect to PayPal
       window.location.href = paypalUrl
       
     } catch (error) {
@@ -117,29 +138,6 @@ export default function ProductPage() {
 
   const closeModal = () => {
     setShowConfirmationModal(false)
-  }
-
-  const sendOrderEmail = (orderDetails) => {
-    // Initialize EmailJS
-    if (typeof window !== 'undefined' && window.emailjs) {
-      window.emailjs.init("YOUR_EMAILJS_PUBLIC_KEY") // Replace with your EmailJS public key
-      
-      const templateParams = {
-        to_email: 'limitedrepsbusiness@gmail.com',
-        order_id: orderDetails.orderId,
-        product_name: orderDetails.productName,
-        price: orderDetails.price,
-        timestamp: orderDetails.timestamp,
-        status: orderDetails.status
-      }
-
-      window.emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams)
-        .then(function(response) {
-          console.log('Order email sent successfully!', response.status, response.text)
-        }, function(error) {
-          console.log('Failed to send order email:', error)
-        })
-    }
   }
 
   if (loading) {
@@ -165,7 +163,6 @@ export default function ProductPage() {
 
   return (
     <Layout>
-      {/* Product Header */}
       <section className="products-header">
         <div className="container">
           <h1>{product.name}</h1>
@@ -173,34 +170,31 @@ export default function ProductPage() {
         </div>
       </section>
 
-      {/* Product Details */}
-      <section className="products-section">
-        <div className="container">
+      <section className="products-section" style={{ minHeight: '100vh', padding: '2rem 0' }}>
+        <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 1rem' }}>
           <div className="product-detail" style={{
             display: 'grid',
             gridTemplateColumns: '1fr 1fr',
-            gap: '2rem',
+            gap: '3rem',
             alignItems: 'start',
-            background: 'rgba(17,17,17,0.7)',
-            padding: '2rem',
-            borderRadius: '20px',
-            border: '1px solid rgba(255,255,255,0.08)'
+            background: 'rgba(17,17,17,0.8)',
+            padding: '3rem',
+            borderRadius: '25px',
+            border: '1px solid rgba(255,255,255,0.1)',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
+            minHeight: '800px'
           }}>
             <div className="product-image" style={{
-              height: '420px',
-              borderRadius: '12px',
-              overflow: 'hidden'
+              height: '500px',
+              borderRadius: '15px',
+              overflow: 'hidden',
+              boxShadow: '0 15px 30px rgba(0,0,0,0.4)'
             }}>
-              {(() => {
-                const src = product.cloudImage || (product.localImage ? `/Limited-Reps--main/${product.localImage}` : '')
-                return (
                   <img
-                    src={src}
+                src={product.cloudImage || (product.localImage ? `/Limited-Reps--main/${product.localImage}` : '')}
                     alt={product.name}
                     style={{ objectFit: 'cover', width: '100%', height: '100%' }}
                   />
-                )
-              })()}
             </div>
             <div>
               <h2 style={{ marginBottom: '1rem' }}>{product.name}</h2>
@@ -208,6 +202,7 @@ export default function ProductPage() {
               <div style={{ margin: '1rem 0' }}>
                 <strong>Price:</strong> <span className="price">${Math.round(product.price)}</span>
               </div>
+              
               <div style={{ margin: '1rem 0' }}>
                 <strong>Available Sizes:</strong>
                 <div style={{
@@ -216,7 +211,7 @@ export default function ProductPage() {
                   flexWrap: 'wrap',
                   marginTop: '.5rem'
                 }}>
-                  {(product.sizes || ['S', 'M', 'L', 'XL', 'XXL']).map((size, index) => (
+                  {(product.sizes || [3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11]).map((size, index) => (
                     <button
                       key={index}
                       onClick={() => handleSizeSelect(size)}
@@ -262,6 +257,7 @@ export default function ProductPage() {
                   </div>
                 )}
               </div>
+              
               <div style={{ margin: '1rem 0' }}>
                 <strong>Available Colors:</strong>
                 <div style={{
@@ -316,8 +312,299 @@ export default function ProductPage() {
                   </div>
                 )}
               </div>
+              
+              <div style={{ margin: '2rem 0' }}>
+                <h3 style={{ 
+                  color: '#fff', 
+                  marginBottom: '1.5rem', 
+                  fontSize: '1.3rem',
+                  fontWeight: '700',
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px',
+                  borderBottom: '2px solid #ffd700',
+                  paddingBottom: '0.5rem'
+                }}>
+                  Customer Information
+                </h3>
+                
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '1rem',
+                  marginBottom: '1rem'
+                }}>
+                  <div>
+                    <label style={{ 
+                      display: 'block', 
+                      color: '#fff', 
+                      marginBottom: '0.5rem',
+                      fontWeight: '700',
+                      fontSize: '0.9rem'
+                    }}>
+                      Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={customerInfo.firstName}
+                      onChange={(e) => handleCustomerInfoChange('firstName', e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '0.8rem',
+                        borderRadius: '6px',
+                        border: '1px solid rgba(255,255,255,0.3)',
+                        background: 'rgba(60,60,60,0.8)',
+                        color: '#fff',
+                        fontSize: '0.95rem',
+                        outline: 'none',
+                        transition: 'all 0.3s ease'
+                      }}
+                      placeholder="Enter first name"
+                    />
+                  </div>
+                  <div>
+                    <label style={{ 
+                      display: 'block', 
+                      color: '#fff', 
+                      marginBottom: '0.5rem',
+                      fontWeight: '700',
+                      fontSize: '0.9rem'
+                    }}>
+                      Last Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={customerInfo.lastName}
+                      onChange={(e) => handleCustomerInfoChange('lastName', e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '0.8rem',
+                        borderRadius: '6px',
+                        border: '1px solid rgba(255,255,255,0.3)',
+                        background: 'rgba(60,60,60,0.8)',
+                        color: '#fff',
+                        fontSize: '0.95rem',
+                        outline: 'none',
+                        transition: 'all 0.3s ease'
+                      }}
+                      placeholder="Enter last name"
+                    />
+                  </div>
+                </div>
+                
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '1rem',
+                  marginBottom: '1rem'
+                }}>
+                  <div>
+                    <label style={{ 
+                      display: 'block', 
+                      color: '#fff', 
+                      marginBottom: '0.5rem',
+                      fontWeight: '700',
+                      fontSize: '0.9rem'
+                    }}>
+                      Email Address *
+                    </label>
+                    <input
+                      type="email"
+                      value={customerInfo.email}
+                      onChange={(e) => handleCustomerInfoChange('email', e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '0.8rem',
+                        borderRadius: '6px',
+                        border: '1px solid rgba(255,255,255,0.3)',
+                        background: 'rgba(60,60,60,0.8)',
+                        color: '#fff',
+                        fontSize: '0.95rem',
+                        outline: 'none',
+                        transition: 'all 0.3s ease'
+                      }}
+                      placeholder="Enter email address"
+                    />
+                  </div>
+                  <div>
+                    <label style={{ 
+                      display: 'block', 
+                      color: '#fff', 
+                      marginBottom: '0.5rem',
+                      fontWeight: '700',
+                      fontSize: '0.9rem'
+                    }}>
+                      Phone Number *
+                    </label>
+                    <input
+                      type="tel"
+                      value={customerInfo.phone}
+                      onChange={(e) => handleCustomerInfoChange('phone', e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '0.8rem',
+                        borderRadius: '6px',
+                        border: '1px solid rgba(255,255,255,0.3)',
+                        background: 'rgba(60,60,60,0.8)',
+                        color: '#fff',
+                        fontSize: '0.95rem',
+                        outline: 'none',
+                        transition: 'all 0.3s ease'
+                      }}
+                      placeholder="Enter phone number"
+                    />
+                  </div>
+                </div>
+                
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={{ 
+                    display: 'block', 
+                    color: '#fff', 
+                    marginBottom: '0.5rem',
+                    fontWeight: '700',
+                    fontSize: '0.9rem'
+                  }}>
+                    Street Address *
+                  </label>
+                  <input
+                    type="text"
+                    value={customerInfo.address}
+                    onChange={(e) => handleCustomerInfoChange('address', e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.8rem',
+                      borderRadius: '6px',
+                      border: '1px solid rgba(255,255,255,0.3)',
+                      background: 'rgba(60,60,60,0.8)',
+                      color: '#fff',
+                      fontSize: '0.95rem',
+                      outline: 'none',
+                      transition: 'all 0.3s ease'
+                    }}
+                    placeholder="Enter street address"
+                  />
+                </div>
+                
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr 1fr',
+                  gap: '1rem',
+                  marginBottom: '1rem'
+                }}>
+                  <div>
+                    <label style={{ 
+                      display: 'block', 
+                      color: '#fff', 
+                      marginBottom: '0.5rem',
+                      fontWeight: '700',
+                      fontSize: '0.9rem'
+                    }}>
+                      City *
+                    </label>
+                    <input
+                      type="text"
+                      value={customerInfo.city}
+                      onChange={(e) => handleCustomerInfoChange('city', e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '0.8rem',
+                        borderRadius: '6px',
+                        border: '1px solid rgba(255,255,255,0.3)',
+                        background: 'rgba(60,60,60,0.8)',
+                        color: '#fff',
+                        fontSize: '0.95rem',
+                        outline: 'none',
+                        transition: 'all 0.3s ease'
+                      }}
+                      placeholder="Enter city"
+                    />
+                  </div>
+                  <div>
+                    <label style={{ 
+                      display: 'block', 
+                      color: '#fff', 
+                      marginBottom: '0.5rem',
+                      fontWeight: '700',
+                      fontSize: '0.9rem'
+                    }}>
+                      State *
+                    </label>
+                    <input
+                      type="text"
+                      value={customerInfo.state}
+                      onChange={(e) => handleCustomerInfoChange('state', e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '0.8rem',
+                        borderRadius: '6px',
+                        border: '1px solid rgba(255,255,255,0.3)',
+                        background: 'rgba(60,60,60,0.8)',
+                        color: '#fff',
+                        fontSize: '0.95rem',
+                        outline: 'none',
+                        transition: 'all 0.3s ease'
+                      }}
+                      placeholder="Enter state"
+                    />
+                  </div>
+                  <div>
+                    <label style={{ 
+                      display: 'block', 
+                      color: '#fff', 
+                      marginBottom: '0.5rem',
+                      fontWeight: '700',
+                      fontSize: '0.9rem'
+                    }}>
+                      Postal Code *
+                    </label>
+                    <input
+                      type="text"
+                      value={customerInfo.zipCode}
+                      onChange={(e) => handleCustomerInfoChange('zipCode', e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '0.8rem',
+                        borderRadius: '6px',
+                        border: '1px solid rgba(255,255,255,0.3)',
+                        background: 'rgba(60,60,60,0.8)',
+                        color: '#fff',
+                        fontSize: '0.95rem',
+                        outline: 'none',
+                        transition: 'all 0.3s ease'
+                      }}
+                      placeholder="Enter postal code"
+                    />
+                  </div>
+                </div>
+                
+                {showCustomerInfoError && (
+                  <div style={{
+                    background: 'linear-gradient(135deg, rgba(255, 107, 107, 0.08) 0%, rgba(255, 107, 107, 0.03) 100%)',
+                    border: '1px solid rgba(255, 107, 107, 0.2)',
+                    borderRadius: '6px',
+                    padding: '12px 16px',
+                    marginBottom: '1rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    boxShadow: '0 1px 4px rgba(255, 107, 107, 0.05)',
+                    animation: 'pulse 2s infinite'
+                  }}>
+                    <span style={{
+                      color: '#ff6b6b',
+                      fontSize: '0.9rem',
+                      fontWeight: '500',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}>
+                      ⚠️ Please fill in all customer information fields
+                    </span>
+                  </div>
+                )}
+              </div>
+              
               <div style={{
-                marginTop: '1.5rem',
+                marginTop: '2rem',
                 display: 'flex',
                 gap: '1rem',
                 flexWrap: 'wrap'
@@ -326,7 +613,7 @@ export default function ProductPage() {
                   product={product}
                   selectedSize={selectedSize}
                   selectedColor={selectedColor}
-                  isSelectionComplete={isSelectionComplete}
+                  isSelectionComplete={isSelectionComplete && isCustomerInfoComplete}
                   onBuyNowClick={handleBuyNowClick}
                   onSuccess={handlePaymentSuccess}
                   onError={handlePaymentError}
@@ -366,7 +653,6 @@ export default function ProductPage() {
         </div>
       </section>
 
-      {/* Confirmation Modal */}
       {showConfirmationModal && (
         <div style={{
           position: 'fixed',
@@ -384,15 +670,16 @@ export default function ProductPage() {
         }}>
           <div style={{
             background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
-            borderRadius: '15px',
-            padding: '1.5rem',
-            maxWidth: '400px',
+            borderRadius: '8px',
+            padding: '0.6rem',
+            maxWidth: 'min(85vw, 400px)',
             width: '100%',
             border: '1px solid rgba(255, 255, 255, 0.1)',
-            boxShadow: '0 15px 30px rgba(0, 0, 0, 0.5)',
-            position: 'relative'
+            boxShadow: '0 10px 20px rgba(0, 0, 0, 0.6)',
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column'
           }}>
-            {/* Close Button */}
             <button
               onClick={closeModal}
               style={{
@@ -416,7 +703,6 @@ export default function ProductPage() {
               ×
             </button>
 
-            {/* Modal Header */}
             <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
               <h2 style={{
                 color: '#fff',
@@ -433,7 +719,6 @@ export default function ProductPage() {
               </p>
             </div>
 
-            {/* Product Image */}
             <div style={{
               textAlign: 'center',
               marginBottom: '1.5rem'
@@ -446,63 +731,55 @@ export default function ProductPage() {
                 overflow: 'hidden',
                 border: '2px solid rgba(255, 215, 0, 0.3)'
               }}>
-                {(() => {
-                  const src = product.cloudImage || (product.localImage ? `/Limited-Reps--main/${product.localImage}` : '')
-                  return (
                     <img
-                      src={src}
+                  src={product.cloudImage || (product.localImage ? `/Limited-Reps--main/${product.localImage}` : '')}
                       alt={product.name}
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
-                  )
-                })()}
               </div>
             </div>
 
-            {/* Order Details */}
             <div style={{
               background: 'rgba(255, 255, 255, 0.05)',
-              borderRadius: '10px',
-              padding: '1rem',
-              marginBottom: '1.5rem',
+              borderRadius: '6px',
+              padding: '0.5rem',
+              marginBottom: '0.5rem',
               border: '1px solid rgba(255, 255, 255, 0.1)'
             }}>
               <h3 style={{
                 color: '#fff',
-                fontSize: '1rem',
-                marginBottom: '0.8rem',
-                textAlign: 'center'
+                fontSize: '0.8rem',
+                marginBottom: '0.4rem',
+                textAlign: 'center',
+                fontWeight: '700',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
               }}>
                 Order Summary
               </h3>
               
-              <div style={{ marginBottom: '0.5rem' }}>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.1rem'
+              }}>
                 <div style={{
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  padding: '0.3rem 0',
-                  borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+                  padding: '0.1rem 0'
                 }}>
-                  <span style={{ color: '#ccc', fontWeight: '500', fontSize: '0.9rem' }}>Product:</span>
-                  <span style={{ color: '#fff', fontWeight: '600', fontSize: '0.9rem' }}>{product.name}</span>
-                </div>
-                
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '0.3rem 0',
-                  borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
-                }}>
-                  <span style={{ color: '#ccc', fontWeight: '500', fontSize: '0.9rem' }}>Size:</span>
+                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>Product:</span>
+                  <span style={{ color: '#fff', fontWeight: '700', fontSize: '0.65rem' }}>{product.name}</span>
+                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>Size:</span>
                   <span style={{ 
                     color: '#ffd700', 
-                    fontWeight: '600',
-                    background: 'rgba(255, 215, 0, 0.1)',
-                    padding: '3px 6px',
-                    borderRadius: '4px',
-                    fontSize: '0.8rem'
+                    fontWeight: '700',
+                    background: 'rgba(255, 215, 0, 0.15)',
+                    padding: '2px 4px',
+                    borderRadius: '3px',
+                    fontSize: '0.65rem',
+                    border: '1px solid rgba(255, 215, 0, 0.3)'
                   }}>
                     {selectedSize}
                   </span>
@@ -512,19 +789,71 @@ export default function ProductPage() {
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  padding: '0.3rem 0',
-                  borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+                  padding: '0.1rem 0'
                 }}>
-                  <span style={{ color: '#ccc', fontWeight: '500', fontSize: '0.9rem' }}>Color:</span>
+                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>Color:</span>
                   <span style={{ 
-                    color: '#ffd700', 
-                    fontWeight: '600',
-                    background: 'rgba(255, 215, 0, 0.1)',
-                    padding: '3px 6px',
-                    borderRadius: '4px',
-                    fontSize: '0.8rem'
+                    color: '#fff', 
+                    fontWeight: '700',
+                    fontSize: '0.65rem'
                   }}>
                     {selectedColor}
+                  </span>
+                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}></span>
+                  <span style={{ 
+                    color: '#fff', 
+                    fontWeight: '700',
+                    fontSize: '0.65rem'
+                  }}>
+                  </span>
+                </div>
+              </div>
+              
+              <div style={{
+                marginTop: '0.4rem',
+                marginBottom: '0.3rem'
+              }}>
+                <h4 style={{
+                  color: '#ffd700',
+                  fontSize: '0.65rem',
+                  fontWeight: '700',
+                  margin: '0 0 0.3rem 0',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  borderBottom: '1px solid rgba(255, 215, 0, 0.4)',
+                  paddingBottom: '0.1rem'
+                }}>
+                  Shipping Information
+                </h4>
+              </div>
+                
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.1rem',
+                marginBottom: '0.4rem'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '0.1rem 0'
+                }}>
+                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>Name:</span>
+                  <span style={{ 
+                    color: '#fff', 
+                    fontWeight: '700', 
+                    fontSize: '0.65rem'
+                  }}>
+                    {customerInfo.firstName} {customerInfo.lastName}
+                  </span>
+                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>Email:</span>
+                  <span style={{ 
+                    color: '#fff', 
+                    fontWeight: '700', 
+                    fontSize: '0.65rem'
+                  }}>
+                    {customerInfo.email}
                   </span>
                 </div>
                 
@@ -532,26 +861,114 @@ export default function ProductPage() {
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  padding: '0.3rem 0'
+                  padding: '0.1rem 0'
                 }}>
-                  <span style={{ color: '#fff', fontWeight: '700', fontSize: '1rem' }}>Total Price:</span>
+                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>Phone No:</span>
                   <span style={{ 
-                    color: '#ffd700', 
-                    fontWeight: '800', 
-                    fontSize: '1.2rem',
-                    textShadow: '0 0 10px rgba(255, 215, 0, 0.3)'
+                    color: '#fff', 
+                    fontWeight: '700', 
+                    fontSize: '0.65rem',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    maxWidth: '80px'
                   }}>
-                    ${Math.round(product.price)}
+                    {customerInfo.phone}
+                  </span>
+                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>City:</span>
+                  <span style={{ 
+                    color: '#fff', 
+                    fontWeight: '700', 
+                    fontSize: '0.65rem',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    maxWidth: '80px'
+                  }}>
+                    {customerInfo.city}
+                  </span>
+                </div>
+                </div>
+                
+                
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.1rem',
+                marginBottom: '0.4rem'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '0.1rem 0'
+                }}>
+                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>Address:</span>
+                  <span style={{ 
+                    color: '#fff', 
+                    fontWeight: '700', 
+                    fontSize: '0.65rem'
+                  }}>
+                    {customerInfo.address}
+                  </span>
+                </div>
+                
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '0.1rem 0'
+                }}>
+                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>State:</span>
+                  <span style={{ 
+                    color: '#fff', 
+                    fontWeight: '700', 
+                    fontSize: '0.65rem',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    maxWidth: '80px'
+                  }}>
+                    {customerInfo.state}
+                  </span>
+                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>Postal Code:</span>
+                  <span style={{ 
+                    color: '#fff', 
+                    fontWeight: '700', 
+                    fontSize: '0.65rem',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    maxWidth: '80px'
+                  }}>
+                    {customerInfo.zipCode}
                   </span>
                 </div>
               </div>
+                
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '0.2rem 0',
+                  marginTop: '0.4rem'
+                }}>
+                  <span style={{ color: '#fff', fontWeight: '700', fontSize: '0.7rem' }}>Total Price:</span>
+                  <span style={{ 
+                    color: '#fff', 
+                    fontWeight: '800', 
+                    fontSize: '0.8rem'
+                  }}>
+                    {Math.round(product.price)}
+                  </span>
+                </div>
             </div>
 
-            {/* Action Buttons */}
             <div style={{
               display: 'flex',
-              gap: '0.8rem',
-              justifyContent: 'center'
+              gap: '0.4rem',
+              justifyContent: 'center',
+              marginTop: '0.5rem'
             }}>
               <button
                 onClick={closeModal}
@@ -559,14 +976,23 @@ export default function ProductPage() {
                   background: 'transparent',
                   color: '#fff',
                   border: '1px solid rgba(255, 255, 255, 0.3)',
-                  padding: '10px 20px',
-                  borderRadius: '20px',
-                  fontSize: '0.9rem',
+                  padding: '6px 12px',
+                  borderRadius: '15px',
+                  fontSize: '0.7rem',
                   fontWeight: '600',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
                   textTransform: 'uppercase',
-                  letterSpacing: '0.5px'
+                  letterSpacing: '0.5px',
+                  minWidth: '80px'
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.background = 'rgba(255, 255, 255, 0.1)'
+                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.5)'
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.background = 'transparent'
+                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'
                 }}
               >
                 Cancel
@@ -578,15 +1004,24 @@ export default function ProductPage() {
                   background: 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)',
                   color: '#000',
                   border: 'none',
-                  padding: '10px 20px',
-                  borderRadius: '20px',
-                  fontSize: '0.9rem',
+                  padding: '6px 12px',
+                  borderRadius: '15px',
+                  fontSize: '0.7rem',
                   fontWeight: '700',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
                   textTransform: 'uppercase',
                   letterSpacing: '0.5px',
-                  boxShadow: '0 6px 15px rgba(255, 215, 0, 0.3)'
+                  boxShadow: '0 4px 10px rgba(255, 215, 0, 0.4)',
+                  minWidth: '100px'
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.transform = 'translateY(-2px)'
+                  e.target.style.boxShadow = '0 8px 20px rgba(255, 215, 0, 0.5)'
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.transform = 'translateY(0)'
+                  e.target.style.boxShadow = '0 6px 15px rgba(255, 215, 0, 0.4)'
                 }}
               >
                 Confirm Order
