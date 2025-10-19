@@ -29,6 +29,19 @@ export default function ProductPage() {
     zipCode: ''
   })
   const [showCustomerInfoError, setShowCustomerInfoError] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Handle window resize for mobile responsiveness
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    
+    handleResize() // Set initial value
+    window.addEventListener('resize', handleResize)
+    
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   useEffect(() => {
     if (slug) {
@@ -224,18 +237,18 @@ export default function ProductPage() {
         <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 1rem' }}>
           <div className="product-detail" style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '3rem',
+            gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+            gap: isMobile ? '2rem' : '3rem',
             alignItems: 'start',
             background: 'rgba(17,17,17,0.8)',
-            padding: '3rem',
+            padding: isMobile ? '1.5rem' : '3rem',
             borderRadius: '25px',
             border: '1px solid rgba(255,255,255,0.1)',
             boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
             minHeight: '800px'
           }}>
             <div className="product-image" style={{
-              height: '500px',
+              height: isMobile ? '300px' : '500px',
               borderRadius: '15px',
               overflow: 'hidden',
               boxShadow: '0 15px 30px rgba(0,0,0,0.4)'
@@ -247,27 +260,48 @@ export default function ProductPage() {
                   />
             </div>
             <div>
-              <h2 style={{ marginBottom: '1rem' }}>{product.name}</h2>
-              <p style={{ color: '#ccc', marginBottom: '1rem' }}>{product.summary || 'Premium quality product with excellent craftsmanship and attention to detail.'}</p>
-              <div style={{ margin: '1rem 0' }}>
-                <strong>Price:</strong> <span className="price">${Math.round(product.price)}</span>
+              <h2 style={{ 
+                marginBottom: '1rem',
+                fontSize: isMobile ? '1.5rem' : '2rem',
+                lineHeight: isMobile ? '1.3' : '1.2'
+              }}>{product.name}</h2>
+              <p style={{ 
+                color: '#ccc', 
+                marginBottom: '1rem',
+                fontSize: isMobile ? '0.9rem' : '1rem',
+                lineHeight: '1.5'
+              }}>{product.summary || 'Premium quality product with excellent craftsmanship and attention to detail.'}</p>
+              <div style={{ 
+                margin: '1rem 0',
+                fontSize: isMobile ? '1.1rem' : '1.2rem'
+              }}>
+                <strong>Price:</strong> <span className="price" style={{
+                  color: '#ffd700',
+                  fontWeight: '700',
+                  fontSize: isMobile ? '1.3rem' : '1.5rem'
+                }}>${Math.round(product.price)}</span>
               </div>
               
               {productSizing?.showSizes && (
                 <div style={{ margin: '1rem 0' }}>
-                  <strong>{productSizing.sizeLabel}</strong>
+                  <strong style={{
+                    fontSize: isMobile ? '1rem' : '1.1rem',
+                    display: 'block',
+                    marginBottom: '0.5rem'
+                  }}>{productSizing.sizeLabel}</strong>
                   <div style={{
                     display: 'flex',
                     gap: '.5rem',
                     flexWrap: 'wrap',
-                    marginTop: '.5rem'
+                    marginTop: '.5rem',
+                    justifyContent: isMobile ? 'center' : 'flex-start'
                   }}>
                     {productSizing.sizes.map((size, index) => (
                     <button
                       key={index}
                       onClick={() => handleSizeSelect(size)}
                       style={{
-                        padding: '.5rem .8rem',
+                        padding: isMobile ? '.6rem .8rem' : '.5rem .8rem',
                         border: selectedSize === size ? '2px solid #ffd700' : '1px solid rgba(255,255,255,.2)',
                         borderRadius: '8px',
                         color: selectedSize === size ? '#ffd700' : '#fff',
@@ -312,19 +346,24 @@ export default function ProductPage() {
               
               {productSizing?.showColors && (
                 <div style={{ margin: '1rem 0' }}>
-                  <strong>{productSizing.colorLabel}</strong>
+                  <strong style={{
+                    fontSize: isMobile ? '1rem' : '1.1rem',
+                    display: 'block',
+                    marginBottom: '0.5rem'
+                  }}>{productSizing.colorLabel}</strong>
                   <div style={{
                     display: 'flex',
                     gap: '.5rem',
                     flexWrap: 'wrap',
-                    marginTop: '.5rem'
+                    marginTop: '.5rem',
+                    justifyContent: isMobile ? 'center' : 'flex-start'
                   }}>
                     {productSizing.colors.map((color, index) => (
                     <button
                       key={index}
                       onClick={() => handleColorSelect(color)}
                       style={{
-                        padding: '.5rem .8rem',
+                        padding: isMobile ? '.6rem .8rem' : '.5rem .8rem',
                         border: selectedColor === color ? '2px solid #ffd700' : '1px solid rgba(255,255,255,.2)',
                         borderRadius: '8px',
                         color: selectedColor === color ? '#ffd700' : '#fff',
@@ -371,7 +410,7 @@ export default function ProductPage() {
                 <h3 style={{ 
                   color: '#fff', 
                   marginBottom: '1.5rem', 
-                  fontSize: '1.3rem',
+                  fontSize: isMobile ? '1.1rem' : '1.3rem',
                   fontWeight: '700',
                   textTransform: 'uppercase',
                   letterSpacing: '1px',
@@ -383,7 +422,7 @@ export default function ProductPage() {
                 
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
+                  gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
                   gap: '1rem',
                   marginBottom: '1rem'
                 }}>
@@ -393,7 +432,7 @@ export default function ProductPage() {
                       color: '#fff', 
                       marginBottom: '0.5rem',
                       fontWeight: '700',
-                      fontSize: '0.9rem'
+                      fontSize: isMobile ? '1rem' : '0.9rem'
                     }}>
                       Name *
                     </label>
@@ -403,12 +442,12 @@ export default function ProductPage() {
                       onChange={(e) => handleCustomerInfoChange('firstName', e.target.value)}
                       style={{
                         width: '100%',
-                        padding: '0.8rem',
+                        padding: isMobile ? '1rem' : '0.8rem',
                         borderRadius: '6px',
                         border: '1px solid rgba(255,255,255,0.3)',
                         background: 'rgba(60,60,60,0.8)',
                         color: '#fff',
-                        fontSize: '0.95rem',
+                        fontSize: isMobile ? '1rem' : '0.95rem',
                         outline: 'none',
                         transition: 'all 0.3s ease'
                       }}
@@ -421,7 +460,7 @@ export default function ProductPage() {
                       color: '#fff', 
                       marginBottom: '0.5rem',
                       fontWeight: '700',
-                      fontSize: '0.9rem'
+                      fontSize: isMobile ? '1rem' : '0.9rem'
                     }}>
                       Last Name *
                     </label>
@@ -431,12 +470,12 @@ export default function ProductPage() {
                       onChange={(e) => handleCustomerInfoChange('lastName', e.target.value)}
                       style={{
                         width: '100%',
-                        padding: '0.8rem',
+                        padding: isMobile ? '1rem' : '0.8rem',
                         borderRadius: '6px',
                         border: '1px solid rgba(255,255,255,0.3)',
                         background: 'rgba(60,60,60,0.8)',
                         color: '#fff',
-                        fontSize: '0.95rem',
+                        fontSize: isMobile ? '1rem' : '0.95rem',
                         outline: 'none',
                         transition: 'all 0.3s ease'
                       }}
@@ -447,7 +486,7 @@ export default function ProductPage() {
                 
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
+                  gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
                   gap: '1rem',
                   marginBottom: '1rem'
                 }}>
@@ -457,7 +496,7 @@ export default function ProductPage() {
                       color: '#fff', 
                       marginBottom: '0.5rem',
                       fontWeight: '700',
-                      fontSize: '0.9rem'
+                      fontSize: isMobile ? '1rem' : '0.9rem'
                     }}>
                       Email Address *
                     </label>
@@ -467,12 +506,12 @@ export default function ProductPage() {
                       onChange={(e) => handleCustomerInfoChange('email', e.target.value)}
                       style={{
                         width: '100%',
-                        padding: '0.8rem',
+                        padding: isMobile ? '1rem' : '0.8rem',
                         borderRadius: '6px',
                         border: '1px solid rgba(255,255,255,0.3)',
                         background: 'rgba(60,60,60,0.8)',
                         color: '#fff',
-                        fontSize: '0.95rem',
+                        fontSize: isMobile ? '1rem' : '0.95rem',
                         outline: 'none',
                         transition: 'all 0.3s ease'
                       }}
@@ -485,7 +524,7 @@ export default function ProductPage() {
                       color: '#fff', 
                       marginBottom: '0.5rem',
                       fontWeight: '700',
-                      fontSize: '0.9rem'
+                      fontSize: isMobile ? '1rem' : '0.9rem'
                     }}>
                       Phone Number *
                     </label>
@@ -495,12 +534,12 @@ export default function ProductPage() {
                       onChange={(e) => handleCustomerInfoChange('phone', e.target.value)}
                       style={{
                         width: '100%',
-                        padding: '0.8rem',
+                        padding: isMobile ? '1rem' : '0.8rem',
                         borderRadius: '6px',
                         border: '1px solid rgba(255,255,255,0.3)',
                         background: 'rgba(60,60,60,0.8)',
                         color: '#fff',
-                        fontSize: '0.95rem',
+                        fontSize: isMobile ? '1rem' : '0.95rem',
                         outline: 'none',
                         transition: 'all 0.3s ease'
                       }}
@@ -540,7 +579,7 @@ export default function ProductPage() {
                 
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: '1fr 1fr 1fr',
+                  gridTemplateColumns: isMobile ? '1fr' : window.innerWidth <= 1024 ? '1fr 1fr' : '1fr 1fr 1fr',
                   gap: '1rem',
                   marginBottom: '1rem'
                 }}>
@@ -550,7 +589,7 @@ export default function ProductPage() {
                       color: '#fff', 
                       marginBottom: '0.5rem',
                       fontWeight: '700',
-                      fontSize: '0.9rem'
+                      fontSize: isMobile ? '1rem' : '0.9rem'
                     }}>
                       City *
                     </label>
@@ -560,12 +599,12 @@ export default function ProductPage() {
                       onChange={(e) => handleCustomerInfoChange('city', e.target.value)}
                       style={{
                         width: '100%',
-                        padding: '0.8rem',
+                        padding: isMobile ? '1rem' : '0.8rem',
                         borderRadius: '6px',
                         border: '1px solid rgba(255,255,255,0.3)',
                         background: 'rgba(60,60,60,0.8)',
                         color: '#fff',
-                        fontSize: '0.95rem',
+                        fontSize: isMobile ? '1rem' : '0.95rem',
                         outline: 'none',
                         transition: 'all 0.3s ease'
                       }}
@@ -578,7 +617,7 @@ export default function ProductPage() {
                       color: '#fff', 
                       marginBottom: '0.5rem',
                       fontWeight: '700',
-                      fontSize: '0.9rem'
+                      fontSize: isMobile ? '1rem' : '0.9rem'
                     }}>
                       State *
                     </label>
@@ -588,12 +627,12 @@ export default function ProductPage() {
                       onChange={(e) => handleCustomerInfoChange('state', e.target.value)}
                       style={{
                         width: '100%',
-                        padding: '0.8rem',
+                        padding: isMobile ? '1rem' : '0.8rem',
                         borderRadius: '6px',
                         border: '1px solid rgba(255,255,255,0.3)',
                         background: 'rgba(60,60,60,0.8)',
                         color: '#fff',
-                        fontSize: '0.95rem',
+                        fontSize: isMobile ? '1rem' : '0.95rem',
                         outline: 'none',
                         transition: 'all 0.3s ease'
                       }}
@@ -606,7 +645,7 @@ export default function ProductPage() {
                       color: '#fff', 
                       marginBottom: '0.5rem',
                       fontWeight: '700',
-                      fontSize: '0.9rem'
+                      fontSize: isMobile ? '1rem' : '0.9rem'
                     }}>
                       Postal Code *
                     </label>
@@ -616,12 +655,12 @@ export default function ProductPage() {
                       onChange={(e) => handleCustomerInfoChange('zipCode', e.target.value)}
                       style={{
                         width: '100%',
-                        padding: '0.8rem',
+                        padding: isMobile ? '1rem' : '0.8rem',
                         borderRadius: '6px',
                         border: '1px solid rgba(255,255,255,0.3)',
                         background: 'rgba(60,60,60,0.8)',
                         color: '#fff',
-                        fontSize: '0.95rem',
+                        fontSize: isMobile ? '1rem' : '0.95rem',
                         outline: 'none',
                         transition: 'all 0.3s ease'
                       }}
@@ -645,7 +684,7 @@ export default function ProductPage() {
                   }}>
                     <span style={{
                       color: '#ff6b6b',
-                      fontSize: '0.9rem',
+                      fontSize: isMobile ? '1rem' : '0.9rem',
                       fontWeight: '500',
                       display: 'flex',
                       alignItems: 'center',
@@ -660,6 +699,7 @@ export default function ProductPage() {
               <div style={{
                 marginTop: '2rem',
                 display: 'flex',
+                flexDirection: isMobile ? 'column' : 'row',
                 gap: '1rem',
                 flexWrap: 'wrap'
               }}>
