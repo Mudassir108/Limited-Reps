@@ -271,16 +271,18 @@ export default function ProductPage() {
                 fontSize: isMobile ? '0.9rem' : '1rem',
                 lineHeight: '1.5'
               }}>{product.summary || 'Premium quality product with excellent craftsmanship and attention to detail.'}</p>
-              <div style={{ 
-                margin: '1rem 0',
-                fontSize: isMobile ? '1.1rem' : '1.2rem'
-              }}>
-                <strong>Price:</strong> <span className="price" style={{
-                  color: '#ffd700',
-                  fontWeight: '700',
-                  fontSize: isMobile ? '1.3rem' : '1.5rem'
-                }}>${Math.round(product.price)}</span>
-              </div>
+              {productSizing?.showPrice !== false && (
+                <div style={{ 
+                  margin: '1rem 0',
+                  fontSize: isMobile ? '1.1rem' : '1.2rem'
+                }}>
+                  <strong>Price:</strong> <span className="price" style={{
+                    color: '#ffd700',
+                    fontWeight: '700',
+                    fontSize: isMobile ? '1.3rem' : '1.5rem'
+                  }}>${Math.round(product.price)}</span>
+                </div>
+              )}
               
               {productSizing?.showSizes && (
                 <div style={{ margin: '1rem 0' }}>
@@ -865,42 +867,48 @@ export default function ProductPage() {
                 }}>
                   <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>Product:</span>
                   <span style={{ color: '#fff', fontWeight: '700', fontSize: '0.65rem' }}>{product.name}</span>
-                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>Size:</span>
-                  <span style={{ 
-                    color: '#ffd700', 
-                    fontWeight: '700',
-                    background: 'rgba(255, 215, 0, 0.15)',
-                    padding: '2px 4px',
-                    borderRadius: '3px',
-                    fontSize: '0.65rem',
-                    border: '1px solid rgba(255, 215, 0, 0.3)'
-                  }}>
-                    {selectedSize}
-                  </span>
+                  {productSizing?.showSizes && (
+                    <>
+                      <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>Size:</span>
+                      <span style={{ 
+                        color: '#ffd700', 
+                        fontWeight: '700',
+                        background: 'rgba(255, 215, 0, 0.15)',
+                        padding: '2px 4px',
+                        borderRadius: '3px',
+                        fontSize: '0.65rem',
+                        border: '1px solid rgba(255, 215, 0, 0.3)'
+                      }}>
+                        {selectedSize}
+                      </span>
+                    </>
+                  )}
                 </div>
                 
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '0.1rem 0'
-                }}>
-                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>Color:</span>
-                  <span style={{ 
-                    color: '#fff', 
-                    fontWeight: '700',
-                    fontSize: '0.65rem'
+                {productSizing?.showColors && (
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '0.1rem 0'
                   }}>
-                    {selectedColor}
-                  </span>
-                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}></span>
-                  <span style={{ 
-                    color: '#fff', 
-                    fontWeight: '700',
-                    fontSize: '0.65rem'
-                  }}>
-                  </span>
-                </div>
+                    <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>Color:</span>
+                    <span style={{ 
+                      color: '#fff', 
+                      fontWeight: '700',
+                      fontSize: '0.65rem'
+                    }}>
+                      {selectedColor}
+                    </span>
+                    <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}></span>
+                    <span style={{ 
+                      color: '#fff', 
+                      fontWeight: '700',
+                      fontSize: '0.65rem'
+                    }}>
+                    </span>
+                  </div>
+                )}
               </div>
               
               <div style={{
@@ -1040,22 +1048,24 @@ export default function ProductPage() {
                 </div>
               </div>
                 
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '0.2rem 0',
-                  marginTop: '0.4rem'
-                }}>
-                  <span style={{ color: '#fff', fontWeight: '700', fontSize: '0.7rem' }}>Total Price:</span>
-                  <span style={{ 
-                    color: '#fff', 
-                    fontWeight: '800', 
-                    fontSize: '0.8rem'
+                {productSizing?.showPrice !== false && (
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '0.2rem 0',
+                    marginTop: '0.4rem'
                   }}>
-                    {Math.round(product.price)}
-                  </span>
-                </div>
+                    <span style={{ color: '#fff', fontWeight: '700', fontSize: '0.7rem' }}>Total Price:</span>
+                    <span style={{ 
+                      color: '#fff', 
+                      fontWeight: '800', 
+                      fontSize: '0.8rem'
+                    }}>
+                      ${Math.round(product.price)}
+                    </span>
+                  </div>
+                )}
             </div>
 
             <div style={{
