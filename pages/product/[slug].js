@@ -149,7 +149,7 @@ export default function ProductPage() {
       // Use a working PayPal business email - you can change this to your actual PayPal email
       const businessEmail = process.env.NEXT_PUBLIC_BUSINESS_EMAIL || 'mudassirshahid605@gmail.com'
       
-      // PayPal URL construction optimized for business account
+      // PayPal URL construction with proper shipping information
       const paypalParams = new URLSearchParams({
         cmd: '_xclick',
         business: businessEmail,
@@ -159,10 +159,25 @@ export default function ProductPage() {
         custom: orderId,
         return: window.location.origin + '/success',
         cancel_return: window.location.origin + '/cancel',
-        no_shipping: '1',
-        no_note: '1',
+        // Include shipping information for physical products
+        no_shipping: '2', // Prompt for shipping address (required)
+        address_override: '0', // Allow customer to change address
+        // Customer information
+        first_name: customerInfo.firstName,
+        last_name: customerInfo.lastName,
+        email: customerInfo.email,
+        // Shipping address
+        address1: customerInfo.address,
+        city: customerInfo.city,
+        state: customerInfo.state,
+        zip: customerInfo.zipCode,
+        country: 'US',
+        night_phone_b: customerInfo.phone,
         lc: 'US',
-        bn: 'PP-BuyNowBF:btn_buynow_LG.gif:NonHosted'
+        bn: 'PP-BuyNowBF:btn_buynow_LG.gif:NonHosted',
+        // Additional parameters
+        charset: 'utf-8',
+        rm: '2' // Return method: POST
       })
       
       const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?${paypalParams.toString()}`
