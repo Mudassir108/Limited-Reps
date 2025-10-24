@@ -686,19 +686,22 @@ export default function ProductPage() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '20px'
+          padding: '10px',
+          overflowY: 'auto'
         }}>
           <div style={{
             background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
             borderRadius: '8px',
-            padding: '0.6rem',
-            maxWidth: 'min(85vw, 400px)',
+            padding: '0.8rem',
+            maxWidth: 'min(95vw, 450px)',
             width: '100%',
+            maxHeight: '95vh',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             boxShadow: '0 10px 20px rgba(0, 0, 0, 0.6)',
             position: 'relative',
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
+            overflowY: 'auto'
           }}>
             <button
               onClick={closeModal}
@@ -723,31 +726,31 @@ export default function ProductPage() {
               ×
             </button>
 
-            <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+            <div style={{ textAlign: 'center', marginBottom: '0.6rem' }}>
               <h2 style={{
                 color: '#fff',
-                fontSize: '1.4rem',
+                fontSize: '1.1rem',
                 fontWeight: '700',
-                marginBottom: '0.3rem',
+                marginBottom: '0.2rem',
                 textTransform: 'uppercase',
-                letterSpacing: '1px'
+                letterSpacing: '0.5px'
               }}>
                 Confirm Your Order
               </h2>
-              <p style={{ color: '#ccc', fontSize: '0.9rem' }}>
+              <p style={{ color: '#ccc', fontSize: '0.7rem', margin: 0 }}>
                 Review your selection before payment
               </p>
             </div>
 
             <div style={{
               textAlign: 'center',
-              marginBottom: '1.5rem'
+              marginBottom: '0.6rem'
             }}>
               <div style={{
-                width: '80px',
-                height: '80px',
+                width: '60px',
+                height: '60px',
                 margin: '0 auto',
-                borderRadius: '8px',
+                borderRadius: '6px',
                 overflow: 'hidden',
                 border: '2px solid rgba(255, 215, 0, 0.3)'
               }}>
@@ -763,13 +766,13 @@ export default function ProductPage() {
               background: 'rgba(255, 255, 255, 0.05)',
               borderRadius: '6px',
               padding: '0.5rem',
-              marginBottom: '0.5rem',
+              marginBottom: '0.4rem',
               border: '1px solid rgba(255, 255, 255, 0.1)'
             }}>
               <h3 style={{
                 color: '#fff',
-                fontSize: '0.8rem',
-                marginBottom: '0.4rem',
+                fontSize: '0.75rem',
+                marginBottom: '0.3rem',
                 textAlign: 'center',
                 fontWeight: '700',
                 textTransform: 'uppercase',
@@ -781,26 +784,26 @@ export default function ProductPage() {
               <div style={{
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '0.1rem'
+                gap: '0.05rem'
               }}>
                 <div style={{
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  padding: '0.1rem 0'
+                  padding: '0.05rem 0'
                 }}>
-                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>Product:</span>
-                  <span style={{ color: '#fff', fontWeight: '700', fontSize: '0.65rem' }}>{product.name}</span>
+                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.6rem' }}>Product:</span>
+                  <span style={{ color: '#fff', fontWeight: '700', fontSize: '0.6rem' }}>{product.name}</span>
                   {productSizing?.showSizes && (
                     <>
-                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>Size:</span>
+                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.6rem' }}>Size:</span>
                   <span style={{ 
                     color: '#ffd700', 
                     fontWeight: '700',
                     background: 'rgba(255, 215, 0, 0.15)',
                     padding: '2px 4px',
                     borderRadius: '3px',
-                    fontSize: '0.65rem',
+                    fontSize: '0.6rem',
                     border: '1px solid rgba(255, 215, 0, 0.3)'
                   }}>
                     {selectedSize}
@@ -814,21 +817,21 @@ export default function ProductPage() {
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  padding: '0.1rem 0'
+                  padding: '0.05rem 0'
                 }}>
-                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>Color:</span>
+                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.6rem' }}>Color:</span>
                   <span style={{ 
                     color: '#fff', 
                     fontWeight: '700',
-                    fontSize: '0.65rem'
+                    fontSize: '0.6rem'
                   }}>
                     {selectedColor}
                   </span>
-                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}></span>
+                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.6rem' }}></span>
                   <span style={{ 
                     color: '#fff', 
                     fontWeight: '700',
-                    fontSize: '0.65rem'
+                    fontSize: '0.6rem'
                   }}>
                   </span>
                 </div>
@@ -836,14 +839,14 @@ export default function ProductPage() {
               </div>
               
               <div style={{
-                marginTop: '0.4rem',
-                marginBottom: '0.3rem'
+                marginTop: '0.3rem',
+                marginBottom: '0.2rem'
               }}>
                 <h4 style={{
                   color: '#ffd700',
-                  fontSize: '0.65rem',
+                  fontSize: '0.6rem',
                   fontWeight: '700',
-                  margin: '0 0 0.3rem 0',
+                  margin: '0 0 0.2rem 0',
                   textTransform: 'uppercase',
                   letterSpacing: '0.5px',
                   borderBottom: '1px solid rgba(255, 215, 0, 0.4)',
@@ -856,28 +859,28 @@ export default function ProductPage() {
               <div style={{
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '0.1rem',
-                marginBottom: '0.4rem'
+                gap: '0.05rem',
+                marginBottom: '0.2rem'
               }}>
                 <div style={{
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  padding: '0.1rem 0'
+                  padding: '0.05rem 0'
                 }}>
-                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>Name:</span>
+                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.6rem' }}>Name:</span>
                   <span style={{ 
                     color: '#fff', 
                     fontWeight: '700', 
-                    fontSize: '0.65rem'
+                    fontSize: '0.6rem'
                   }}>
                     {customerInfo.firstName} {customerInfo.lastName}
                   </span>
-                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>Email:</span>
+                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.6rem' }}>Email:</span>
                   <span style={{ 
                     color: '#fff', 
                     fontWeight: '700', 
-                    fontSize: '0.65rem'
+                    fontSize: '0.6rem'
                   }}>
                     {customerInfo.email}
                   </span>
@@ -887,13 +890,13 @@ export default function ProductPage() {
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  padding: '0.1rem 0'
+                  padding: '0.05rem 0'
                 }}>
-                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>Phone No:</span>
+                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.6rem' }}>Phone No:</span>
                   <span style={{ 
                     color: '#fff', 
                     fontWeight: '700', 
-                    fontSize: '0.65rem',
+                    fontSize: '0.6rem',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -901,11 +904,11 @@ export default function ProductPage() {
                   }}>
                     {customerInfo.phone}
                   </span>
-                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>City:</span>
+                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.6rem' }}>City:</span>
                   <span style={{ 
                     color: '#fff', 
                     fontWeight: '700', 
-                    fontSize: '0.65rem',
+                    fontSize: '0.6rem',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -920,20 +923,20 @@ export default function ProductPage() {
               <div style={{
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '0.1rem',
-                marginBottom: '0.4rem'
+                gap: '0.05rem',
+                marginBottom: '0.2rem'
               }}>
                 <div style={{
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  padding: '0.1rem 0'
+                  padding: '0.05rem 0'
                 }}>
-                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>Address:</span>
+                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.6rem' }}>Address:</span>
                   <span style={{ 
                     color: '#fff', 
                     fontWeight: '700', 
-                    fontSize: '0.65rem'
+                    fontSize: '0.6rem'
                   }}>
                     {customerInfo.address}
                   </span>
@@ -943,13 +946,13 @@ export default function ProductPage() {
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  padding: '0.1rem 0'
+                  padding: '0.05rem 0'
                 }}>
-                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>State:</span>
+                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.6rem' }}>State:</span>
                   <span style={{ 
                     color: '#fff', 
                     fontWeight: '700', 
-                    fontSize: '0.65rem',
+                    fontSize: '0.6rem',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -957,11 +960,11 @@ export default function ProductPage() {
                   }}>
                     {customerInfo.state}
                   </span>
-                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>Postal Code:</span>
+                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.6rem' }}>Postal Code:</span>
                   <span style={{ 
                     color: '#fff', 
                     fontWeight: '700', 
-                    fontSize: '0.65rem',
+                    fontSize: '0.6rem',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -977,12 +980,14 @@ export default function ProductPage() {
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  padding: '0.2rem 0',
-                  marginTop: '0.4rem'
+                  padding: '0.1rem 0',
+                  marginTop: '0.3rem',
+                  borderTop: '1px solid rgba(255, 215, 0, 0.3)',
+                  paddingTop: '0.3rem'
                 }}>
-                  <span style={{ color: '#fff', fontWeight: '700', fontSize: '0.7rem' }}>Total Price:</span>
+                  <span style={{ color: '#ffd700', fontWeight: '700', fontSize: '0.7rem' }}>Total Price:</span>
                   <span style={{ 
-                    color: '#fff', 
+                    color: '#ffd700', 
                     fontWeight: '800', 
                     fontSize: '0.8rem'
                   }}>
@@ -995,15 +1000,15 @@ export default function ProductPage() {
             <div style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: '0.8rem',
+              gap: '0.4rem',
               justifyContent: 'center',
-              marginTop: '0.8rem'
+              marginTop: '0.4rem'
             }}>
-              <div style={{ textAlign: 'center', marginBottom: '0.3rem' }}>
+              <div style={{ textAlign: 'center', marginBottom: '0' }}>
                 <p style={{ 
                   color: '#ffd700', 
-                  fontSize: '0.7rem',
-                  margin: '0 0 0.5rem 0',
+                  fontSize: '0.65rem',
+                  margin: '0 0 0.3rem 0',
                   fontWeight: '600',
                   textTransform: 'uppercase',
                   letterSpacing: '0.5px'
@@ -1013,14 +1018,14 @@ export default function ProductPage() {
               </div>
               
               {/* PayPal Buttons in Modal */}
-              <div id="paypal-button-container-modal" style={{ minHeight: '150px' }}>
+              <div id="paypal-button-container-modal" style={{ minHeight: '120px' }}>
                 <PayPalButtons
                   style={{
                     layout: 'vertical',
                     color: 'gold',
                     shape: 'rect',
                     label: 'pay',
-                    height: 45
+                    height: 38
                   }}
                   createOrder={(data, actions) => {
                     const itemName = `${product.name}${selectedSize ? ` - Size: ${selectedSize}` : ''}${selectedColor ? ` - Color: ${selectedColor}` : ''}`
@@ -1087,15 +1092,15 @@ export default function ProductPage() {
                   background: 'transparent',
                   color: '#fff',
                   border: '1px solid rgba(255, 255, 255, 0.3)',
-                  padding: '8px 16px',
-                  borderRadius: '15px',
-                  fontSize: '0.7rem',
+                  padding: '6px 12px',
+                  borderRadius: '12px',
+                  fontSize: '0.65rem',
                   fontWeight: '600',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
                   textTransform: 'uppercase',
                   letterSpacing: '0.5px',
-                  marginTop: '0.3rem'
+                  marginTop: '0.2rem'
                 }}
               >
                 Cancel
