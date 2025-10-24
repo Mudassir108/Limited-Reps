@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/router'
 import Layout from '../../components/Layout'
 import PayPalButton from '../../components/PayPalButton'
@@ -126,6 +126,8 @@ export default function ProductPage() {
     }
   }
 
+  const paypalButtonRef = useRef(null)
+
   const handleConfirmOrder = async () => {
     if (!product) return
 
@@ -145,96 +147,23 @@ export default function ProductPage() {
 
       localStorage.setItem('lastOrder', JSON.stringify(orderDetails))
       
-      const itemName = `${product.name}${selectedSize ? ` - Size: ${selectedSize}` : ''}${selectedColor ? ` - Color: ${selectedColor}` : ''}`
-      // Use a working PayPal business email - you can change this to your actual PayPal email
-      const businessEmail = process.env.NEXT_PUBLIC_BUSINESS_EMAIL || 'mudassirshahid605@gmail.com'
-      
-      // PayPal URL construction with proper shipping information
-      const paypalParams = new URLSearchParams({
-        cmd: '_xclick',
-        business: businessEmail,
-        item_name: itemName,
-        amount: Math.round(product.price),
-        currency_code: 'USD',
-        custom: orderId,
-        return: window.location.origin + '/success',
-        cancel_return: window.location.origin + '/cancel',
-        // Include shipping information for physical products
-        no_shipping: '2', // Prompt for shipping address (required)
-        address_override: '0', // Allow customer to change address
-        // Customer information
-        first_name: customerInfo.firstName,
-        last_name: customerInfo.lastName,
-        email: customerInfo.email,
-        // Shipping address
-        address1: customerInfo.address,
-        city: customerInfo.city,
-        state: customerInfo.state,
-        zip: customerInfo.zipCode,
-        country: 'US',
-        night_phone_b: customerInfo.phone,
-        lc: 'US',
-        bn: 'PP-BuyNowBF:btn_buynow_LG.gif:NonHosted',
-        // Additional parameters
-        charset: 'utf-8',
-        rm: '2' // Return method: POST
-      })
-      
-      const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?${paypalParams.toString()}`
-      
-      // Debug: Log the PayPal URL for troubleshooting
-      console.log('PayPal URL:', paypalUrl)
-      console.log('Business Email:', businessEmail)
+      console.log('Order confirmed, opening PayPal checkout...')
       console.log('Order Details:', orderDetails)
-      console.log('PayPal Parameters:', Object.fromEntries(paypalParams))
       
-      // Validate business email before redirecting
-      if (!businessEmail || !businessEmail.includes('@')) {
-        console.error('Invalid business email:', businessEmail)
-        alert('❌ Payment configuration error.\n\nThe PayPal business email is not configured correctly.\nPlease contact support.')
-        return
-      }
+      // Close the confirmation modal
+      setShowConfirmationModal(false)
       
-      // Validate that we're using the correct business email
-      if (businessEmail !== 'mudassirshahid605@gmail.com') {
-        console.warn('Using fallback business email instead of configured email')
-      }
-      
-      // Show helpful error message if this is a known issue
-      const debugMode = false // Set to true to see PayPal URL before redirect
-      
-      if (debugMode) {
-        const proceed = confirm(
-          '🔍 DEBUG MODE\n\n' +
-          'PayPal URL generated successfully.\n\n' +
-          'Check browser console for details.\n\n' +
-          'Click OK to proceed to PayPal, or Cancel to stop.'
-        )
-        if (!proceed) {
-          console.log('User cancelled PayPal redirect')
-          return
+      // Show PayPal checkout buttons
+      // Scroll to PayPal button area
+      setTimeout(() => {
+        if (paypalButtonRef.current) {
+          paypalButtonRef.current.showCheckout()
         }
-      }
-      
-      // Try PayPal redirect with error handling
-      try {
-        window.location.href = paypalUrl
-      } catch (error) {
-        console.error('PayPal redirect error:', error)
-        alert(
-          '❌ PayPal Redirect Error\n\n' +
-          `Order ID: ${orderId}\n\n` +
-          'Error: Unable to redirect to PayPal.\n\n' +
-          'Please check:\n' +
-          '1. Your internet connection\n' +
-          '2. Browser popup blocker settings\n' +
-          '3. Contact support if issue persists'
-        )
-      }
+      }, 300)
       
     } catch (error) {
-      console.error('PayPal redirect failed:', error)
-      alert('Payment failed. Please try again.')
+      console.error('Order preparation failed:', error)
+      alert('Failed to prepare order. Please try again.')
     }
   }
 
@@ -311,16 +240,16 @@ export default function ProductPage() {
                 lineHeight: '1.5'
               }}>{product.summary || 'Premium quality product with excellent craftsmanship and attention to detail.'}</p>
               {productSizing?.showPrice !== false && (
-                <div style={{ 
-                  margin: '1rem 0',
-                  fontSize: isMobile ? '1.1rem' : '1.2rem'
-                }}>
-                  <strong>Price:</strong> <span className="price" style={{
-                    color: '#ffd700',
-                    fontWeight: '700',
-                    fontSize: isMobile ? '1.3rem' : '1.5rem'
-                  }}>${Math.round(product.price)}</span>
-                </div>
+              <div style={{ 
+                margin: '1rem 0',
+                fontSize: isMobile ? '1.1rem' : '1.2rem'
+              }}>
+                <strong>Price:</strong> <span className="price" style={{
+                  color: '#ffd700',
+                  fontWeight: '700',
+                  fontSize: isMobile ? '1.3rem' : '1.5rem'
+                }}>${Math.round(product.price)}</span>
+              </div>
               )}
               
               {productSizing?.showSizes && (
@@ -745,9 +674,11 @@ export default function ProductPage() {
                 flexWrap: 'wrap'
               }}>
                 <PayPalButton
+                  ref={paypalButtonRef}
                   product={product}
                   selectedSize={selectedSize}
                   selectedColor={selectedColor}
+                  customerInfo={customerInfo}
                   isSelectionComplete={isSelectionComplete && isCustomerInfoComplete}
                   onBuyNowClick={handleBuyNowClick}
                   onSuccess={handlePaymentSuccess}
@@ -908,45 +839,45 @@ export default function ProductPage() {
                   <span style={{ color: '#fff', fontWeight: '700', fontSize: '0.65rem' }}>{product.name}</span>
                   {productSizing?.showSizes && (
                     <>
-                      <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>Size:</span>
-                      <span style={{ 
-                        color: '#ffd700', 
-                        fontWeight: '700',
-                        background: 'rgba(255, 215, 0, 0.15)',
-                        padding: '2px 4px',
-                        borderRadius: '3px',
-                        fontSize: '0.65rem',
-                        border: '1px solid rgba(255, 215, 0, 0.3)'
-                      }}>
-                        {selectedSize}
-                      </span>
+                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>Size:</span>
+                  <span style={{ 
+                    color: '#ffd700', 
+                    fontWeight: '700',
+                    background: 'rgba(255, 215, 0, 0.15)',
+                    padding: '2px 4px',
+                    borderRadius: '3px',
+                    fontSize: '0.65rem',
+                    border: '1px solid rgba(255, 215, 0, 0.3)'
+                  }}>
+                    {selectedSize}
+                  </span>
                     </>
                   )}
                 </div>
                 
                 {productSizing?.showColors && (
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '0.1rem 0'
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '0.1rem 0'
+                }}>
+                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>Color:</span>
+                  <span style={{ 
+                    color: '#fff', 
+                    fontWeight: '700',
+                    fontSize: '0.65rem'
                   }}>
-                    <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}>Color:</span>
-                    <span style={{ 
-                      color: '#fff', 
-                      fontWeight: '700',
-                      fontSize: '0.65rem'
-                    }}>
-                      {selectedColor}
-                    </span>
-                    <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}></span>
-                    <span style={{ 
-                      color: '#fff', 
-                      fontWeight: '700',
-                      fontSize: '0.65rem'
-                    }}>
-                    </span>
-                  </div>
+                    {selectedColor}
+                  </span>
+                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.65rem' }}></span>
+                  <span style={{ 
+                    color: '#fff', 
+                    fontWeight: '700',
+                    fontSize: '0.65rem'
+                  }}>
+                  </span>
+                </div>
                 )}
               </div>
               
@@ -1088,22 +1019,22 @@ export default function ProductPage() {
               </div>
                 
                 {productSizing?.showPrice !== false && (
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '0.2rem 0',
-                    marginTop: '0.4rem'
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '0.2rem 0',
+                  marginTop: '0.4rem'
+                }}>
+                  <span style={{ color: '#fff', fontWeight: '700', fontSize: '0.7rem' }}>Total Price:</span>
+                  <span style={{ 
+                    color: '#fff', 
+                    fontWeight: '800', 
+                    fontSize: '0.8rem'
                   }}>
-                    <span style={{ color: '#fff', fontWeight: '700', fontSize: '0.7rem' }}>Total Price:</span>
-                    <span style={{ 
-                      color: '#fff', 
-                      fontWeight: '800', 
-                      fontSize: '0.8rem'
-                    }}>
                       ${Math.round(product.price)}
-                    </span>
-                  </div>
+                  </span>
+                </div>
                 )}
             </div>
 
