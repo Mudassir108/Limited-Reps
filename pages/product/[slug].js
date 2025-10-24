@@ -186,11 +186,12 @@ export default function ProductPage() {
       console.log('PayPal URL:', paypalUrl)
       console.log('Business Email:', businessEmail)
       console.log('Order Details:', orderDetails)
+      console.log('PayPal Parameters:', Object.fromEntries(paypalParams))
       
       // Validate business email before redirecting
       if (!businessEmail || !businessEmail.includes('@')) {
         console.error('Invalid business email:', businessEmail)
-        alert('Payment configuration error. Please contact support.')
+        alert('❌ Payment configuration error.\n\nThe PayPal business email is not configured correctly.\nPlease contact support.')
         return
       }
       
@@ -199,13 +200,36 @@ export default function ProductPage() {
         console.warn('Using fallback business email instead of configured email')
       }
       
+      // Show helpful error message if this is a known issue
+      const debugMode = false // Set to true to see PayPal URL before redirect
+      
+      if (debugMode) {
+        const proceed = confirm(
+          '🔍 DEBUG MODE\n\n' +
+          'PayPal URL generated successfully.\n\n' +
+          'Check browser console for details.\n\n' +
+          'Click OK to proceed to PayPal, or Cancel to stop.'
+        )
+        if (!proceed) {
+          console.log('User cancelled PayPal redirect')
+          return
+        }
+      }
+      
       // Try PayPal redirect with error handling
       try {
         window.location.href = paypalUrl
       } catch (error) {
         console.error('PayPal redirect error:', error)
-        // Fallback: Show alert with PayPal information
-        alert(`PayPal integration error. Please contact support with Order ID: ${orderId}`)
+        alert(
+          '❌ PayPal Redirect Error\n\n' +
+          `Order ID: ${orderId}\n\n` +
+          'Error: Unable to redirect to PayPal.\n\n' +
+          'Please check:\n' +
+          '1. Your internet connection\n' +
+          '2. Browser popup blocker settings\n' +
+          '3. Contact support if issue persists'
+        )
       }
       
     } catch (error) {
