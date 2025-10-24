@@ -1027,6 +1027,7 @@ export default function ProductPage() {
                     label: 'pay',
                     height: 38
                   }}
+                  forceReRender={[customerInfo, product, selectedSize, selectedColor]}
                   createOrder={(data, actions) => {
                     const itemName = `${product.name}${selectedSize ? ` - Size: ${selectedSize}` : ''}${selectedColor ? ` - Color: ${selectedColor}` : ''}`
                     
