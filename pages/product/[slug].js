@@ -17,6 +17,7 @@ export default function ProductPage() {
   const [showColorError, setShowColorError] = useState(false)
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
   const [productSizing, setProductSizing] = useState(null)
+  const [cardPaymentWindow, setCardPaymentWindow] = useState(null)
 
   // Customer information fields
   const [customerInfo, setCustomerInfo] = useState({
@@ -79,6 +80,31 @@ export default function ProductPage() {
     }
   }, [slug])
 
+  // Listen for messages from card payment popup
+  useEffect(() => {
+    const handleMessage = (event) => {
+      // Security check - in production, verify event.origin
+      if (event.data.type === 'PAYMENT_SUCCESS') {
+        console.log('Card payment successful:', event.data.orderDetails)
+        setShowConfirmationModal(false)
+        // Redirect to success page
+        setTimeout(() => {
+          router.push('/success')
+        }, 500)
+      } else if (event.data.type === 'PAYMENT_FAILED') {
+        console.log('Card payment failed')
+        // Just close the modal, user can try again
+        setShowConfirmationModal(false)
+      }
+    }
+
+    window.addEventListener('message', handleMessage)
+    
+    return () => {
+      window.removeEventListener('message', handleMessage)
+    }
+  }, [router])
+
   const handlePaymentSuccess = (orderDetails) => {
     console.log('Payment successful:', orderDetails)
   }
@@ -129,6 +155,43 @@ export default function ProductPage() {
 
   const closeModal = () => {
     setShowConfirmationModal(false)
+  }
+
+  const handleCardPayment = () => {
+    // Build URL with order data
+    const params = new URLSearchParams({
+      productName: product.name,
+      price: Math.round(product.price),
+      selectedSize: selectedSize || 'Not specified',
+      selectedColor: selectedColor || 'Not specified',
+      firstName: customerInfo.firstName,
+      lastName: customerInfo.lastName,
+      email: customerInfo.email,
+      phone: customerInfo.phone,
+      address: customerInfo.address,
+      city: customerInfo.city,
+      state: customerInfo.state,
+      zipCode: customerInfo.zipCode
+    })
+
+    // Open popup window
+    const width = 600
+    const height = 700
+    const left = (window.screen.width - width) / 2
+    const top = (window.screen.height - height) / 2
+    
+    const popup = window.open(
+      `/card-payment?${params.toString()}`,
+      'Card Payment',
+      `width=${width},height=${height},left=${left},top=${top},scrollbars=yes,resizable=yes`
+    )
+    
+    setCardPaymentWindow(popup)
+    
+    // Check if popup was blocked
+    if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+      alert('Popup blocked! Please allow popups for this site and try again.')
+    }
   }
 
   if (loading) {
@@ -1085,6 +1148,41 @@ export default function ProductPage() {
                   }}
                 />
               </div>
+
+              {/* Debit or Credit Card Button */}
+              <button
+                onClick={handleCardPayment}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.9)',
+                  color: '#000',
+                  border: 'none',
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  fontSize: '0.9rem',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  textTransform: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  width: '100%'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'rgba(255, 255, 255, 1)'
+                  e.target.style.transform = 'translateY(-2px)'
+                  e.target.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)'
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'rgba(255, 255, 255, 0.9)'
+                  e.target.style.transform = 'translateY(0)'
+                  e.target.style.boxShadow = 'none'
+                }}
+              >
+                <span style={{ fontSize: '1.2rem' }}>💳</span>
+                Debit or Credit Card
+              </button>
               
               <button
                 onClick={closeModal}
