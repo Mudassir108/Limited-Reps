@@ -44,11 +44,10 @@ npm run dev
 
 1. **Customer fills form** → Enters shipping info, selects product options
 2. **Clicks "Buy Now"** → Validation runs
-3. **Reviews order** → Confirmation modal shows all details
-4. **Clicks "Confirm Order"** → Modal closes, PayPal buttons appear
-5. **Clicks PayPal button** → Official PayPal checkout modal opens
-6. **Completes payment** → PayPal processes, returns to success page
-7. **Confirmation** → Email notifications sent, order tracked
+3. **Reviews order** → Confirmation modal shows all details AND PayPal buttons
+4. **Clicks PayPal button** → Official PayPal checkout modal opens (never leaves your site!)
+5. **Completes payment** → PayPal processes, returns to success page
+6. **Confirmation** → Email notifications sent, order tracked
 
 ### Payment Flow:
 

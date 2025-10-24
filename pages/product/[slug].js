@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Layout from '../../components/Layout'
 import PayPalButton from '../../components/PayPalButton'
+import { PayPalButtons } from '@paypal/react-paypal-js'
 import flatProducts from '../../flat_products.json'
 import { getProductSizing } from '../../lib/productSizing'
 
@@ -123,47 +124,6 @@ export default function ProductPage() {
     
     if (isSelectionComplete && isCustomerInfoComplete) {
       setShowConfirmationModal(true)
-    }
-  }
-
-  const paypalButtonRef = useRef(null)
-
-  const handleConfirmOrder = async () => {
-    if (!product) return
-
-    try {
-      const orderId = 'LR' + Date.now() + Math.random().toString(36).substr(2, 5).toUpperCase()
-      
-      const orderDetails = {
-        orderId: orderId,
-        productName: product.name,
-        price: Math.round(product.price),
-        selectedSize: selectedSize || 'Not specified',
-        selectedColor: selectedColor || 'Not specified',
-        customerInfo: customerInfo,
-        timestamp: new Date().toLocaleString(),
-        status: 'Pending Payment'
-      }
-
-      localStorage.setItem('lastOrder', JSON.stringify(orderDetails))
-      
-      console.log('Order confirmed, opening PayPal checkout...')
-      console.log('Order Details:', orderDetails)
-      
-      // Close the confirmation modal
-      setShowConfirmationModal(false)
-      
-      // Show PayPal checkout buttons
-      // Scroll to PayPal button area
-      setTimeout(() => {
-        if (paypalButtonRef.current) {
-          paypalButtonRef.current.showCheckout()
-        }
-      }, 300)
-      
-    } catch (error) {
-      console.error('Order preparation failed:', error)
-      alert('Failed to prepare order. Please try again.')
     }
   }
 
@@ -674,15 +634,9 @@ export default function ProductPage() {
                 flexWrap: 'wrap'
               }}>
                 <PayPalButton
-                  ref={paypalButtonRef}
                   product={product}
-                  selectedSize={selectedSize}
-                  selectedColor={selectedColor}
-                  customerInfo={customerInfo}
                   isSelectionComplete={isSelectionComplete && isCustomerInfoComplete}
                   onBuyNowClick={handleBuyNowClick}
-                  onSuccess={handlePaymentSuccess}
-                  onError={handlePaymentError}
                 />
                 <a 
                   href="/products" 
@@ -1040,17 +994,100 @@ export default function ProductPage() {
 
             <div style={{
               display: 'flex',
-              gap: '0.4rem',
+              flexDirection: 'column',
+              gap: '0.8rem',
               justifyContent: 'center',
-              marginTop: '0.5rem'
+              marginTop: '0.8rem'
             }}>
+              <div style={{ textAlign: 'center', marginBottom: '0.3rem' }}>
+                <p style={{ 
+                  color: '#ffd700', 
+                  fontSize: '0.7rem',
+                  margin: '0 0 0.5rem 0',
+                  fontWeight: '600',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px'
+                }}>
+                  Choose Payment Method
+                </p>
+              </div>
+              
+              {/* PayPal Buttons in Modal */}
+              <div id="paypal-button-container-modal" style={{ minHeight: '150px' }}>
+                <PayPalButtons
+                  style={{
+                    layout: 'vertical',
+                    color: 'gold',
+                    shape: 'rect',
+                    label: 'pay',
+                    height: 45
+                  }}
+                  createOrder={(data, actions) => {
+                    const itemName = `${product.name}${selectedSize ? ` - Size: ${selectedSize}` : ''}${selectedColor ? ` - Color: ${selectedColor}` : ''}`
+                    
+                    return actions.order.create({
+                      purchase_units: [{
+                        description: itemName,
+                        amount: {
+                          currency_code: 'USD',
+                          value: Math.round(product.price).toString()
+                        },
+                        shipping: {
+                          name: {
+                            full_name: `${customerInfo?.firstName || ''} ${customerInfo?.lastName || ''}`
+                          },
+                          address: {
+                            address_line_1: customerInfo?.address || '',
+                            admin_area_2: customerInfo?.city || '',
+                            admin_area_1: customerInfo?.state || '',
+                            postal_code: customerInfo?.zipCode || '',
+                            country_code: 'US'
+                          }
+                        }
+                      }]
+                    })
+                  }}
+                  onApprove={async (data, actions) => {
+                    try {
+                      const details = await actions.order.capture()
+                      console.log('Payment successful:', details)
+                      
+                      const orderId = 'LR' + Date.now() + Math.random().toString(36).substr(2, 5).toUpperCase()
+                      const orderDetails = {
+                        orderId: orderId,
+                        paypalTransactionId: details.id,
+                        productName: product.name,
+                        price: Math.round(product.price),
+                        selectedSize: selectedSize || 'Not specified',
+                        selectedColor: selectedColor || 'Not specified',
+                        customerInfo: customerInfo,
+                        payerEmail: details.payer.email_address,
+                        payerName: `${details.payer.name.given_name} ${details.payer.name.surname}`,
+                        timestamp: new Date().toLocaleString(),
+                        status: 'Payment Completed'
+                      }
+                      
+                      localStorage.setItem('lastOrder', JSON.stringify(orderDetails))
+                      window.location.href = '/success'
+                    } catch (error) {
+                      console.error('Payment capture error:', error)
+                      alert('Payment processing failed. Please try again.')
+                    }
+                  }}
+                  onError={(err) => {
+                    console.error('PayPal error:', err)
+                    alert('Payment failed. Please try again.')
+                  }}
+                />
+              </div>
+              
               <button
                 onClick={closeModal}
                 style={{
                   background: 'transparent',
                   color: '#fff',
                   border: '1px solid rgba(255, 255, 255, 0.3)',
-                  padding: '6px 12px',
+                  padding: '8px 16px',
                   borderRadius: '15px',
                   fontSize: '0.7rem',
                   fontWeight: '600',
@@ -1058,47 +1095,10 @@ export default function ProductPage() {
                   transition: 'all 0.3s ease',
                   textTransform: 'uppercase',
                   letterSpacing: '0.5px',
-                  minWidth: '80px'
-                }}
-                onMouseOver={(e) => {
-                  e.target.style.background = 'rgba(255, 255, 255, 0.1)'
-                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.5)'
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.background = 'transparent'
-                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'
+                  marginTop: '0.3rem'
                 }}
               >
                 Cancel
-              </button>
-              
-              <button
-                onClick={handleConfirmOrder}
-                style={{
-                  background: 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)',
-                  color: '#000',
-                  border: 'none',
-                  padding: '6px 12px',
-                  borderRadius: '15px',
-                  fontSize: '0.7rem',
-                  fontWeight: '700',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  boxShadow: '0 4px 10px rgba(255, 215, 0, 0.4)',
-                  minWidth: '100px'
-                }}
-                onMouseOver={(e) => {
-                  e.target.style.transform = 'translateY(-2px)'
-                  e.target.style.boxShadow = '0 8px 20px rgba(255, 215, 0, 0.5)'
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.transform = 'translateY(0)'
-                  e.target.style.boxShadow = '0 6px 15px rgba(255, 215, 0, 0.4)'
-                }}
-              >
-                Confirm Order
               </button>
             </div>
           </div>
