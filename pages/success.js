@@ -88,7 +88,6 @@ export default function Success() {
                 <p><strong>Order ID:</strong> {orderDetails.orderId}</p>
                 <p><strong>Product:</strong> {orderDetails.productName}</p>
                 {orderDetails.selectedSize && <p><strong>Size:</strong> {orderDetails.selectedSize}</p>}
-                {orderDetails.selectedColor && <p><strong>Color:</strong> {orderDetails.selectedColor}</p>}
                 <p><strong>Amount:</strong> ${Math.round(orderDetails.price)}</p>
                 <p><strong>Customer Email:</strong> {orderDetails.customerEmail}</p>
                 <p><strong>Customer Name:</strong> {orderDetails.customerName}</p>

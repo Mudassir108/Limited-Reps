@@ -12,9 +12,7 @@ export default function ProductPage() {
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [selectedSize, setSelectedSize] = useState(null)
-  const [selectedColor, setSelectedColor] = useState(null)
   const [showSizeError, setShowSizeError] = useState(false)
-  const [showColorError, setShowColorError] = useState(false)
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
   const [productSizing, setProductSizing] = useState(null)
 
@@ -93,11 +91,6 @@ export default function ProductPage() {
     setShowSizeError(false)
   }
 
-  const handleColorSelect = (color) => {
-    setSelectedColor(color)
-    setShowColorError(false)
-  }
-
   const handleCustomerInfoChange = (field, value) => {
     setCustomerInfo(prev => ({
       ...prev,
@@ -106,7 +99,7 @@ export default function ProductPage() {
     setShowCustomerInfoError(false)
   }
 
-  const isSelectionComplete = (!productSizing?.showSizes || selectedSize) && (!productSizing?.showColors || selectedColor)
+  const isSelectionComplete = (!productSizing?.showSizes || selectedSize)
   const isCustomerInfoComplete = customerInfo.firstName && customerInfo.lastName && 
     customerInfo.email && customerInfo.phone && customerInfo.address && 
     customerInfo.city && customerInfo.state && customerInfo.zipCode
@@ -114,9 +107,6 @@ export default function ProductPage() {
   const handleBuyNowClick = () => {
     if (productSizing?.showSizes && !selectedSize) {
       setShowSizeError(true)
-    }
-    if (productSizing?.showColors && !selectedColor) {
-      setShowColorError(true)
     }
     if (!isCustomerInfoComplete) {
       setShowCustomerInfoError(true)
@@ -157,7 +147,7 @@ export default function ProductPage() {
       <section className="products-header">
         <div className="container">
           <h1>{product.name}</h1>
-          <p>Premium quality, multiple sizes and colors available</p>
+          <p>Premium quality, multiple sizes available</p>
         </div>
       </section>
 
@@ -268,68 +258,6 @@ export default function ProductPage() {
                       gap: '4px'
                     }}>
                       ⚠️ Please select a size
-                    </span>
-                  </div>
-                )}
-                </div>
-              )}
-              
-              {productSizing?.showColors && (
-                <div style={{ margin: '1rem 0' }}>
-                  <strong style={{
-                    fontSize: isMobile ? '1rem' : '1.1rem',
-                    display: 'block',
-                    marginBottom: '0.5rem'
-                  }}>{productSizing.colorLabel}</strong>
-                  <div style={{
-                    display: 'flex',
-                    gap: '.5rem',
-                    flexWrap: 'wrap',
-                    marginTop: '.5rem',
-                    justifyContent: isMobile ? 'center' : 'flex-start'
-                  }}>
-                    {productSizing.colors.map((color, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleColorSelect(color)}
-                      style={{
-                        padding: isMobile ? '.6rem .8rem' : '.5rem .8rem',
-                        border: selectedColor === color ? '2px solid #ffd700' : '1px solid rgba(255,255,255,.2)',
-                        borderRadius: '8px',
-                        color: selectedColor === color ? '#ffd700' : '#fff',
-                        background: selectedColor === color ? 'rgba(255, 215, 0, 0.1)' : 'transparent',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease',
-                        fontWeight: selectedColor === color ? '700' : '400',
-                        boxShadow: selectedColor === color ? '0 0 10px rgba(255, 215, 0, 0.3)' : 'none'
-                      }}
-                    >
-                      {color}
-                    </button>
-                  ))}
-                </div>
-                {showColorError && (
-                  <div style={{
-                    background: 'linear-gradient(135deg, rgba(255, 107, 107, 0.08) 0%, rgba(255, 107, 107, 0.03) 100%)',
-                    border: '1px solid rgba(255, 107, 107, 0.2)',
-                    borderRadius: '6px',
-                    padding: '8px 12px',
-                    marginTop: '0.5rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    boxShadow: '0 1px 4px rgba(255, 107, 107, 0.05)',
-                    animation: 'pulse 2s infinite'
-                  }}>
-                    <span style={{
-                      color: '#ff6b6b',
-                      fontSize: '0.85rem',
-                      fontWeight: '500',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}>
-                      ⚠️ Please select a color
                     </span>
                   </div>
                 )}
@@ -811,31 +739,6 @@ export default function ProductPage() {
                     </>
                   )}
                 </div>
-                
-                {productSizing?.showColors && (
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '0.05rem 0'
-                }}>
-                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.6rem' }}>Color:</span>
-                  <span style={{ 
-                    color: '#fff', 
-                    fontWeight: '700',
-                    fontSize: '0.6rem'
-                  }}>
-                    {selectedColor}
-                  </span>
-                  <span style={{ color: '#ccc', fontWeight: '600', fontSize: '0.6rem' }}></span>
-                  <span style={{ 
-                    color: '#fff', 
-                    fontWeight: '700',
-                    fontSize: '0.6rem'
-                  }}>
-                  </span>
-                </div>
-                )}
               </div>
               
               <div style={{
@@ -1027,9 +930,9 @@ export default function ProductPage() {
                     label: 'pay',
                     height: 38
                   }}
-                  forceReRender={[customerInfo, product, selectedSize, selectedColor]}
+                  forceReRender={[customerInfo, product, selectedSize]}
                   createOrder={(data, actions) => {
-                    const itemName = `${product.name}${selectedSize ? ` - Size: ${selectedSize}` : ''}${selectedColor ? ` - Color: ${selectedColor}` : ''}`
+                    const itemName = `${product.name}${selectedSize ? ` - Size: ${selectedSize}` : ''}`
                     
                     return actions.order.create({
                       purchase_units: [{
@@ -1065,7 +968,6 @@ export default function ProductPage() {
                         productName: product.name,
                         price: Math.round(product.price),
                         selectedSize: selectedSize || 'Not specified',
-                        selectedColor: selectedColor || 'Not specified',
                         customerInfo: customerInfo,
                         payerEmail: details.payer.email_address,
                         payerName: `${details.payer.name.given_name} ${details.payer.name.surname}`,
