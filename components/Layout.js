@@ -60,6 +60,16 @@ export default function Layout({ children }) {
               </Link>
             </li>
             <li className="nav-item">
+              <a
+                href="https://tinyurl.com/viewmyproducts"
+                className="nav-link"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Find More Products
+              </a>
+            </li>
+            <li className="nav-item">
               <Link href="/contact" className={`nav-link ${router.pathname === '/contact' ? 'active' : ''}`}>
                 Send Message
               </Link>
